@@ -100,7 +100,7 @@ public class WebSecurityConfiguration {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/error").permitAll()
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
                 .cors(Customizer.withDefaults());
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authorizationRequestFilter(), UsernamePasswordAuthenticationFilter.class);
