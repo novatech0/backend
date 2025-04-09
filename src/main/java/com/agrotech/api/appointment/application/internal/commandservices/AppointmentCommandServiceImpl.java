@@ -1,10 +1,7 @@
 package com.agrotech.api.appointment.application.internal.commandservices;
 
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
-import com.agrotech.api.appointment.domain.exceptions.AdvisorNotFoundException;
-import com.agrotech.api.appointment.domain.exceptions.FarmerNotFoundException;
-import com.agrotech.api.appointment.domain.exceptions.IncorrectStatusException;
-import com.agrotech.api.appointment.domain.exceptions.IncorrectTimeFormatException;
+import com.agrotech.api.appointment.domain.exceptions.*;
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.CreateAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
@@ -36,6 +33,12 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
         if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
         var farmer = externalProfilesService.fetchFarmerById(command.farmerId());
         if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
+
+        // Verification of the date
+        if (command.scheduledDate().isBefore(LocalDateTime.now().toLocalDate())) {
+            throw new InvalidDateException(command.scheduledDate());
+        }
+
         // Verification of Status
         if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED|REVIEWED)$")) {
             throw new IncorrectStatusException(command.status());
