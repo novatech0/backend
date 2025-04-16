@@ -39,6 +39,7 @@ public class Animal {
         this.gender = command.gender();
         this.weight = command.weight();
         this.health = HealthStatus.valueOf(command.health().toUpperCase());
+        this.enclosure = enclosure;
     }
 
     public Animal update(UpdateAnimalCommand command) {
