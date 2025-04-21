@@ -4,3 +4,5 @@
 mvnw
 mvnw.cmd
 target
+# Environment variables
+.env
