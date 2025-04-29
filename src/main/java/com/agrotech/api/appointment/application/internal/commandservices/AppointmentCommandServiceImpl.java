@@ -40,7 +40,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
         }
 
         // Verification of Status
-        if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED|REVIEWED)$")) {
+        if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED)$")) {
             throw new IncorrectStatusException(command.status());
         }
         //Verification Start time and End time are in the format HH:mm
@@ -60,7 +60,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
         var appointment = appointmentRepository.findById(command.id());
         if (appointment.isEmpty()) return Optional.empty();
         // Verification of Status
-        if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED|REVIEWED)$")) {
+        if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED)$")) {
             throw new IncorrectStatusException(command.status());
         }
         //Verification Start time and End time are in the format HH:mm
@@ -86,11 +86,6 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
     }
 
     public void updateAppointmentStatus(Appointment appointment) {
-        // If the appointment has already been reviewed, do not update the status
-        if (Objects.equals(appointment.getAppointmentStatus(), AppointmentStatus.REVIEWED.name())) {
-            return;
-        }
-
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start = LocalDateTime.of(appointment.getScheduledDate(), LocalTime.parse(appointment.getStartTime()));
         LocalDateTime end = LocalDateTime.of(appointment.getScheduledDate(), LocalTime.parse(appointment.getEndTime()));
