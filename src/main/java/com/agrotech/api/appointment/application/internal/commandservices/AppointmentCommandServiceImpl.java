@@ -2,6 +2,7 @@ package com.agrotech.api.appointment.application.internal.commandservices;
 
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.exceptions.*;
+import com.agrotech.api.appointment.domain.model.events.CreateAvailableDateByAppointmentDeleted;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
 import com.agrotech.api.appointment.domain.model.events.DeleteAvailableDateByAppointmentCreated;
 import com.agrotech.api.shared.domain.exceptions.*;
@@ -84,9 +85,11 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
     }
 
     @Override
+    @Transactional
     public void handle(DeleteAppointmentCommand command) {
         var appointment = appointmentRepository.findById(command.id());
         if (appointment.isEmpty()) throw new AdvisorNotFoundException(command.id());
+        eventPublisher.publishEvent(new CreateAvailableDateByAppointmentDeleted(this, appointment.get().getAdvisorId(), appointment.get().getFarmerId(), appointment.get().getScheduledDate(), appointment.get().getStartTime(), appointment.get().getEndTime()));
         appointmentRepository.delete(appointment.get());
     }
 
