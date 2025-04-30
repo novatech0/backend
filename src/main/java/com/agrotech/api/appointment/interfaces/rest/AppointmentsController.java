@@ -4,6 +4,7 @@ import com.agrotech.api.appointment.domain.exceptions.AppointmentNotFoundExcepti
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
+import com.agrotech.api.appointment.domain.model.events.DeleteAvailableDateByAppointmentCreated;
 import com.agrotech.api.appointment.domain.model.queries.*;
 import com.agrotech.api.appointment.domain.services.AppointmentCommandService;
 import com.agrotech.api.appointment.domain.services.AppointmentQueryService;
@@ -19,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,12 +33,10 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class AppointmentsController {
     private final AppointmentCommandService appointmentCommandService;
     private final AppointmentQueryService appointmentQueryService;
-    private final ApplicationEventPublisher eventPublisher;
 
-    public AppointmentsController(AppointmentCommandService appointmentCommandService, AppointmentQueryService appointmentQueryService, ApplicationEventPublisher eventPublisher) {
+    public AppointmentsController(AppointmentCommandService appointmentCommandService, AppointmentQueryService appointmentQueryService) {
         this.appointmentCommandService = appointmentCommandService;
         this.appointmentQueryService = appointmentQueryService;
-        this.eventPublisher = eventPublisher;
     }
 
     @GetMapping
@@ -85,7 +83,6 @@ public class AppointmentsController {
         var appointment = appointmentQueryService.handle(new GetAppointmentByIdQuery(appointmentId));
         if (appointment.isEmpty()) return ResponseEntity.badRequest().build();
         var appointmentResource = AppointmentResourceFromEntityAssembler.toResourceFromEntity(appointment.get());
-        eventPublisher.publishEvent(new CreateNotificationByAppointmentCreated(this, appointmentResource.farmerId(), appointmentResource.advisorId()));
         return new ResponseEntity<>(appointmentResource, HttpStatus.CREATED);
     }
 

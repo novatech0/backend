@@ -15,6 +15,7 @@ import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.RoleRepo
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -52,6 +53,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     @Override
+    @Transactional
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username())) throw new UsernameAlreadyExistsException();
         var roles = command.roles().stream().map(role -> roleRepository.findByName(role.getName()).orElseThrow(() -> new InvalidRoleException(role.getStringName()))).toList();

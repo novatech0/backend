@@ -4,4 +4,8 @@ public class AvailableDateNotFoundException extends RuntimeException {
     public AvailableDateNotFoundException(Long id) {
         super("Available date not found with id: " + id);
     }
+
+    public AvailableDateNotFoundException() {
+        super("Available date not found");
+    }
 }

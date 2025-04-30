@@ -2,6 +2,7 @@ package com.agrotech.api.appointment.application.internal.queryservices;
 
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.model.queries.GetAllAvailableDatesQuery;
+import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByAdvisorIdAndDate;
 import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByIdQuery;
 import com.agrotech.api.appointment.domain.model.queries.GetAvailableDatesByAdvisorIdQuery;
 import com.agrotech.api.appointment.domain.services.AvailableDateQueryService;
@@ -30,6 +31,14 @@ public class AvailableDateQueryServiceImpl implements AvailableDateQueryService 
     @Override
     public Optional<AvailableDate> handle(GetAvailableDateByIdQuery query) {
         Optional<AvailableDate> availableDate = availableDateRepository.findById(query.id());
+        availableDate.ifPresent(this::removePastAvailableDate);
+        return availableDate;
+    }
+
+    @Override
+    public Optional<AvailableDate> handle(GetAvailableDateByAdvisorIdAndDate query) {
+        Optional<AvailableDate> availableDate = availableDateRepository.findByAdvisor_IdAndAvailableDateAndStartTimeAndEndTime(
+                query.advisorId(), query.availableDate(), query.startTime(), query.endTime());
         availableDate.ifPresent(this::removePastAvailableDate);
         return availableDate;
     }

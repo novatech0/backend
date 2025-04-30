@@ -2,6 +2,8 @@ package com.agrotech.api.appointment.application.internal.commandservices;
 
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.exceptions.*;
+import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
+import com.agrotech.api.appointment.domain.model.events.DeleteAvailableDateByAppointmentCreated;
 import com.agrotech.api.shared.domain.exceptions.*;
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.CreateAppointmentCommand;
@@ -10,7 +12,9 @@ import com.agrotech.api.appointment.domain.model.commands.UpdateAppointmentComma
 import com.agrotech.api.appointment.domain.model.valueobjects.AppointmentStatus;
 import com.agrotech.api.appointment.domain.services.AppointmentCommandService;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.AppointmentRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -21,13 +25,18 @@ import java.util.Optional;
 public class AppointmentCommandServiceImpl implements AppointmentCommandService {
     private final AppointmentRepository appointmentRepository;
     private final ExternalProfilesService externalProfilesService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public AppointmentCommandServiceImpl(AppointmentRepository appointmentRepository, ExternalProfilesService externalProfilesService) {
+    public AppointmentCommandServiceImpl(AppointmentRepository appointmentRepository,
+                                         ExternalProfilesService externalProfilesService,
+                                         ApplicationEventPublisher eventPublisher) {
         this.appointmentRepository = appointmentRepository;
         this.externalProfilesService = externalProfilesService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
+    @Transactional
     public Long handle(CreateAppointmentCommand command) {
         var advisor = externalProfilesService.fetchAdvisorById(command.advisorId());
         if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
@@ -52,6 +61,8 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
 
         Appointment appointment = new Appointment(command, meetingUrl, advisor.get(), farmer.get());
         appointmentRepository.save(appointment);
+        eventPublisher.publishEvent(new CreateNotificationByAppointmentCreated(this, command.farmerId(), command.advisorId()));
+        eventPublisher.publishEvent(new DeleteAvailableDateByAppointmentCreated(this, command.advisorId(), command.scheduledDate(), command.startTime(), command.endTime()));
         return appointment.getId();
     }
 
