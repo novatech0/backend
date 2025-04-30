@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(value = "/api/v1/enclosures", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Enclosures", description = "Enclosure Management Endpoints")

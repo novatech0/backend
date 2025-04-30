@@ -26,7 +26,6 @@ import java.util.Optional;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(value="api/v1/posts", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Posts", description = "Post Management Endpoints")
