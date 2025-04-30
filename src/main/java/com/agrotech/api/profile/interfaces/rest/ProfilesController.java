@@ -51,9 +51,7 @@ public class ProfilesController {
     public ResponseEntity<ProfileResource> getProfileById(@PathVariable Long id) {
         var getProfileByIdQuery = new GetProfileByIdQuery(id);
         var profile = profileQueryService.handle(getProfileByIdQuery);
-        if (profile.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (profile.isEmpty()) return ResponseEntity.notFound().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }
@@ -62,9 +60,7 @@ public class ProfilesController {
     public ResponseEntity<ProfileResource> getProfileByUserId(@PathVariable Long userId) {
         var getProfileByUserIdQuery = new GetProfileByUserIdQuery(userId);
         var profile = profileQueryService.handle(getProfileByUserIdQuery);
-        if (profile.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (profile.isEmpty()) return ResponseEntity.notFound().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }
@@ -80,19 +76,9 @@ public class ProfilesController {
     @PostMapping
     public ResponseEntity<ProfileResource> createProfile(@RequestBody CreateProfileResource createProfileResource) {
         var createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(createProfileResource);
-        Long profileId;
-        try {
-            profileId = profileCommandService.handle(createProfileCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (profileId == 0L) {
-            return ResponseEntity.badRequest().build();
-        }
+        Long profileId = profileCommandService.handle(createProfileCommand);
         var profile = profileQueryService.handle(new GetProfileByIdQuery(profileId));
-        if (profile.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+        if (profile.isEmpty()) return ResponseEntity.badRequest().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return new ResponseEntity<>(profileResource, HttpStatus.CREATED);
     }
@@ -100,16 +86,8 @@ public class ProfilesController {
     @PutMapping("/{id}")
     public ResponseEntity<ProfileResource> updateProfile(@PathVariable Long id,@RequestBody UpdateProfileResource updateProfileResource) {
         var updateProfileCommand = UpdateProfileCommandFromResourceAssembler.toCommandFromResource(id, updateProfileResource);
-        Optional<Profile> profile;
-        try{
-            profile = profileCommandService.handle(updateProfileCommand);
-        }
-        catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-        if (profile.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        Optional<Profile> profile = profileCommandService.handle(updateProfileCommand);
+        if (profile.isEmpty()) return ResponseEntity.notFound().build();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }
@@ -117,11 +95,7 @@ public class ProfilesController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProfile(@PathVariable Long id) {
         var deleteProfileCommand = new DeleteProfileCommand(id);
-        try {
-            profileCommandService.handle(deleteProfileCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        profileCommandService.handle(deleteProfileCommand);
         return ResponseEntity.ok("Profile with id " + id + " deleted successfully");
     }
 

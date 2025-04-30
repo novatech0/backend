@@ -67,13 +67,7 @@ public class EnclosuresController {
     @PostMapping
     public ResponseEntity<EnclosureResource> createEnclosure(@RequestBody CreateEnclosureResource createEnclosureResource) {
         var createEnclosureCommand = CreateEnclosureCommandFromResourceAssembler.toCommandFromResource(createEnclosureResource);
-        Long enclosureId;
-        try {
-            enclosureId = enclosureCommandService.handle(createEnclosureCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (enclosureId == 0L) return ResponseEntity.badRequest().build();
+        Long enclosureId = enclosureCommandService.handle(createEnclosureCommand);
         var enclosure = enclosureQueryService.handle(new GetEnclosureByIdQuery(enclosureId));
         if (enclosure.isEmpty()) return ResponseEntity.badRequest().build();
         var enclosureResource = EnclosureResourceFromEntityAssembler.toResourceFromEntity(enclosure.get());
@@ -83,12 +77,7 @@ public class EnclosuresController {
     @PutMapping("/{id}")
     public ResponseEntity<EnclosureResource> updateEnclosure(@PathVariable Long id, @RequestBody UpdateEnclosureResource updateEnclosureResource) {
         var updateEnclosureCommand = UpdateEnclosureCommandFromResourceAssembler.toCommandFromResource(id, updateEnclosureResource);
-        Optional<Enclosure> enclosure;
-        try {
-            enclosure = enclosureCommandService.handle(updateEnclosureCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        Optional<Enclosure> enclosure = enclosureCommandService.handle(updateEnclosureCommand);
         if (enclosure.isEmpty()) return ResponseEntity.notFound().build();
         var enclosureResource = EnclosureResourceFromEntityAssembler.toResourceFromEntity(enclosure.get());
         return ResponseEntity.ok(enclosureResource);
@@ -97,11 +86,7 @@ public class EnclosuresController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEnclosure(@PathVariable Long id) {
         var deleteEnclosureCommand = new DeleteEnclosureCommand(id);
-        try {
-            enclosureCommandService.handle(deleteEnclosureCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        enclosureCommandService.handle(deleteEnclosureCommand);
         return ResponseEntity.ok().body("Enclosure with id " + id + " deleted successfully.");
     }
 }

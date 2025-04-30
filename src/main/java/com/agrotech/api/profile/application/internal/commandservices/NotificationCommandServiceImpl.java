@@ -2,7 +2,7 @@ package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.profile.application.internal.outboundservices.acl.ExternalUserService;
 import com.agrotech.api.profile.domain.exceptions.NotificationNotFoundException;
-import com.agrotech.api.profile.domain.exceptions.UserNotFoundException;
+import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.commands.CreateNotificationCommand;
 import com.agrotech.api.profile.domain.model.commands.DeleteNotificationCommand;
 import com.agrotech.api.profile.domain.model.entities.Notification;

@@ -1,8 +1,8 @@
 package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
-import com.agrotech.api.profile.domain.exceptions.FarmerNotFoundException;
-import com.agrotech.api.profile.domain.exceptions.UserNotFoundException;
+import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
+import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
 import com.agrotech.api.profile.domain.model.commands.DeleteFarmerCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;

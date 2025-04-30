@@ -1,6 +1,5 @@
 package com.agrotech.api.management.application.internal.commandservices;
 
-import com.agrotech.api.appointment.domain.exceptions.FarmerNotFoundException;
 import com.agrotech.api.management.domain.exceptions.EnclosureNotFoundException;
 import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
@@ -9,6 +8,7 @@ import com.agrotech.api.management.domain.model.commands.UpdateEnclosureCommand;
 import com.agrotech.api.management.domain.services.EnclosureCommandService;
 import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.repositories.FarmerRepository;
+import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

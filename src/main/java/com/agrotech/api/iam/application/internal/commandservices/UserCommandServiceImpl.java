@@ -3,7 +3,10 @@ package com.agrotech.api.iam.application.internal.commandservices;
 import com.agrotech.api.iam.application.internal.outboundservices.acl.ExternalProfileRoleService;
 import com.agrotech.api.iam.application.internal.outboundservices.hashing.HashingService;
 import com.agrotech.api.iam.application.internal.outboundservices.tokens.TokenService;
-import com.agrotech.api.iam.domain.exceptions.RoleNotFoundException;
+import com.agrotech.api.iam.domain.exceptions.InvalidPasswordException;
+import com.agrotech.api.iam.domain.exceptions.InvalidRoleException;
+import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
+import com.agrotech.api.iam.domain.exceptions.UsernameAlreadyExistsException;
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.iam.domain.model.commands.SignInCommand;
 import com.agrotech.api.iam.domain.model.commands.SignUpCommand;
@@ -39,42 +42,22 @@ public class UserCommandServiceImpl implements UserCommandService {
         this.externalProfileRoleService = externalProfileRoleService;
     }
 
-    /**
-     * Handle the sign-in command
-     * <p>
-     *     This method handles the {@link SignInCommand} command and returns the user and the token.
-     * </p>
-     * @param command the sign-in command containing the username and password
-     * @return and optional containing the user matching the username and the generated token
-     * @throws RuntimeException if the user is not found or the password is invalid
-     */
     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
         var user = userRepository.findByUsername(command.username());
-        if (user.isEmpty())
-            throw new RuntimeException("User not found");
-        if (!hashingService.matches(command.password(), user.get().getPassword()))
-            throw new RuntimeException("Invalid password");
+        if (user.isEmpty()) throw new UserNotFoundException();
+        if (!hashingService.matches(command.password(), user.get().getPassword())) throw new InvalidPasswordException();
         var token = tokenService.generateToken(user.get().getUsername());
         return Optional.of(ImmutablePair.of(user.get(), token));
     }
 
-    /**
-     * Handle the sign-up command
-     * <p>
-     *     This method handles the {@link SignUpCommand} command and returns the user.
-     * </p>
-     * @param command the sign-up command containing the username and password
-     * @return the created user
-     */
     @Override
     public Optional<User> handle(SignUpCommand command) {
-        if (userRepository.existsByUsername(command.username()))
-            throw new RuntimeException("Username already exists");
-        var roles = command.roles().stream().map(role -> roleRepository.findByName(role.getName()).orElseThrow(() -> new RoleNotFoundException(role.getStringName()))).toList();
+        if (userRepository.existsByUsername(command.username())) throw new UsernameAlreadyExistsException();
+        var roles = command.roles().stream().map(role -> roleRepository.findByName(role.getName()).orElseThrow(() -> new InvalidRoleException(role.getStringName()))).toList();
         var user = new User(command.username(), hashingService.encode(command.password()), roles);
         userRepository.save(user);
-        //Create farmer or advisor depending on the role
+        //Create a farmer or advisor depending on the role
         roles.forEach(role -> {
             if (role.getStringName().equals("ROLE_FARMER")) {
                 externalProfileRoleService.createFarmer(user.getId(), user);

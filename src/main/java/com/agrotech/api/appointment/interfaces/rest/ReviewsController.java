@@ -73,9 +73,7 @@ public class ReviewsController {
     public ResponseEntity<ReviewResource> getReviewById(@PathVariable Long id) {
         var getReviewByIdQuery = new GetReviewByIdQuery(id);
         var review = reviewQueryService.handle(getReviewByIdQuery);
-        if (review.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (review.isEmpty()) return ResponseEntity.notFound().build();
         var reviewResource = ReviewResourceFromEntityAssembler.toResourceFromEntity(review.get());
         return ResponseEntity.ok(reviewResource);
     }
@@ -83,13 +81,7 @@ public class ReviewsController {
     @PostMapping
     public ResponseEntity<ReviewResource> createReview(@RequestBody CreateReviewResource createReviewResource) {
         var createReviewCommand = CreateReviewCommandFromResourceAssembler.toCommandFromResource(createReviewResource);
-        Long reviewId;
-        try {
-            reviewId = reviewCommandService.handle(createReviewCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (reviewId == 0L) return ResponseEntity.badRequest().build();
+        Long reviewId = reviewCommandService.handle(createReviewCommand);
         var review = reviewQueryService.handle(new GetReviewByIdQuery(reviewId));
         if (review.isEmpty()) return ResponseEntity.badRequest().build();
         var reviewResource = ReviewResourceFromEntityAssembler.toResourceFromEntity(review.get());
@@ -99,12 +91,7 @@ public class ReviewsController {
     @PutMapping("/{id}")
     public ResponseEntity<ReviewResource> updateReview(@PathVariable Long id, @RequestBody UpdateReviewResource updateReviewResource) {
         var updateReviewCommand = UpdateReviewCommandFromResourceAssembler.toCommandFromResource(id, updateReviewResource);
-        Optional<Review> review;
-        try {
-            review = reviewCommandService.handle(updateReviewCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        Optional<Review> review = reviewCommandService.handle(updateReviewCommand);
         if (review.isEmpty()) return ResponseEntity.notFound().build();
         var reviewResource = ReviewResourceFromEntityAssembler.toResourceFromEntity(review.get());
         return ResponseEntity.ok(reviewResource);
@@ -113,11 +100,7 @@ public class ReviewsController {
      @DeleteMapping("/{id}")
      public ResponseEntity<?> deleteReview(@PathVariable Long id) {
          var deleteReviewCommand = new DeleteReviewCommand(id);
-         try {
-             reviewCommandService.handle(deleteReviewCommand);
-         } catch (Exception e) {
-             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage());
-         }
+         reviewCommandService.handle(deleteReviewCommand);
          return ResponseEntity.ok().body("Review with id " + id + " deleted successfully");
      }
 }

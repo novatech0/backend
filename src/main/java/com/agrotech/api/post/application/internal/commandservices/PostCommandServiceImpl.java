@@ -1,7 +1,7 @@
 package com.agrotech.api.post.application.internal.commandservices;
 
 import com.agrotech.api.post.application.internal.outboundservices.acl.ExternalProfileService;
-import com.agrotech.api.post.domain.exceptions.AdvisorNotFoundException;
+import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.post.domain.exceptions.PostNotFoundException;
 import com.agrotech.api.post.domain.model.aggregates.Post;
 import com.agrotech.api.post.domain.model.commands.CreatePostCommand;
@@ -25,32 +25,26 @@ public class PostCommandServiceImpl implements PostCommandService {
 
     @Override
     public Long handle(CreatePostCommand command) {
-        var advisor = externalProfileService.fetchAdvisorById(command.advisorId());
-        if (advisor.isEmpty()) {
-            throw new AdvisorNotFoundException(command.advisorId());
-        }
-        Post post = new Post(command, advisor.get());
+        var advisor = externalProfileService.fetchAdvisorById(command.advisorId())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
+        Post post = new Post(command, advisor);
         postRepository.save(post);
         return post.getId();
     }
 
     @Override
     public Optional<Post> handle(UpdatePostCommand command) {
-        var post = postRepository.findById(command.id());
-        if (post.isEmpty()) {
-            return Optional.empty();
-        }
-        var postToUpdate = post.get();
-        Post updatedPost = postRepository.save(postToUpdate.update(command));
+        var post = postRepository.findById(command.id())
+                .orElseThrow(() -> new PostNotFoundException(command.id()));
+        Post updatedPost = postRepository.save(post.update(command));
         return Optional.of(updatedPost);
     }
 
     @Override
     public void handle(DeletePostCommand command) {
-        var post = postRepository.findById(command.id());
-        if (post.isEmpty()) {
-            throw new PostNotFoundException(command.id());
-        }
-        postRepository.delete(post.get());
+        var post = postRepository.findById(command.id())
+                .orElseThrow(() -> new PostNotFoundException(command.id()));
+        postRepository.delete(post);
     }
+
 }

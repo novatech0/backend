@@ -54,9 +54,7 @@ public class NotificationsController {
     public ResponseEntity<NotificationResource> getNotificationById(@PathVariable Long id) {
         var getNotificationByIdQuery = new GetNotificationByIdQuery(id);
         var notification = notificationQueryService.handle(getNotificationByIdQuery);
-        if (notification.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (notification.isEmpty()) return ResponseEntity.notFound().build();
         var notificationResource = NotificationResourceFromEntityAssembler.toResourceFromEntity(notification.get());
         return ResponseEntity.ok(notificationResource);
     }
@@ -64,19 +62,9 @@ public class NotificationsController {
     @PostMapping
     public ResponseEntity<NotificationResource> createNotification(@RequestBody CreateNotificationResource createNotificationResource){
         var createNotificationCommand = CreateNotificationCommandFromResourceAssembler.toCommandFromResource(createNotificationResource);
-        Long notificationId;
-        try {
-            notificationId = notificationCommandService.handle(createNotificationCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if(notificationId == 0L){
-            return ResponseEntity.badRequest().build();
-        }
+        Long notificationId = notificationCommandService.handle(createNotificationCommand);
         var notification = notificationQueryService.handle(new GetNotificationByIdQuery(notificationId));
-        if (notification.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+        if (notification.isEmpty()) return ResponseEntity.badRequest().build();
         var notificationResource = NotificationResourceFromEntityAssembler.toResourceFromEntity(notification.get());
         return new ResponseEntity<>(notificationResource, HttpStatus.CREATED);
     }
@@ -84,11 +72,7 @@ public class NotificationsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
         var deleteNotificationCommand = new DeleteNotificationCommand(id);
-        try {
-            notificationCommandService.handle(deleteNotificationCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage());
-        }
+        notificationCommandService.handle(deleteNotificationCommand);
         return ResponseEntity.ok().body("Notification with id: " + id + " deleted successfully");
     }
 }

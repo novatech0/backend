@@ -8,6 +8,8 @@ import com.agrotech.api.appointment.domain.model.commands.UpdateReviewCommand;
 import com.agrotech.api.appointment.domain.model.entities.Review;
 import com.agrotech.api.appointment.domain.services.ReviewCommandService;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.ReviewRepository;
+import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
+import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

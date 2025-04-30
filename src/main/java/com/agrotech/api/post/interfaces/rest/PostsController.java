@@ -64,9 +64,7 @@ public class PostsController {
     public ResponseEntity<PostResource> getPostById(@PathVariable Long id) {
         var getPostByIdQuery = new GetPostByIdQuery(id);
         var post = postQueryService.handle(getPostByIdQuery);
-        if (post.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (post.isEmpty()) return ResponseEntity.notFound().build();
         var postResource = PostResourceFromEntityAssembler.toResourceFromEntity(post.get());
         return ResponseEntity.ok(postResource);
     }
@@ -75,14 +73,9 @@ public class PostsController {
     public ResponseEntity<PostResource> createPost(@RequestBody CreatePostResource createPostResource) {
         var createPostCommand = CreatePostCommandFromResourceAssembler.toCommandFromResource(createPostResource);
         var postId = postCommandService.handle(createPostCommand);
-        if (postId == 0L) {
-            return ResponseEntity.badRequest().build();
-        }
         var getPostByIdQuery = new GetPostByIdQuery(postId);
         var post = postQueryService.handle(getPostByIdQuery);
-        if (post.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+        if (post.isEmpty()) return ResponseEntity.badRequest().build();
         var postResource = PostResourceFromEntityAssembler.toResourceFromEntity(post.get());
         return new ResponseEntity<>(postResource, HttpStatus.CREATED);
     }
@@ -90,15 +83,8 @@ public class PostsController {
     @PutMapping("/{id}")
     public ResponseEntity<PostResource> updatePost(@PathVariable Long id, @RequestBody UpdatePostResource updatePostResource) {
         var updatePostCommand = UpdatePostCommandFromResourceAssembler.toCommandFromResource(id, updatePostResource);
-        Optional<Post> post;
-        try {
-            post = postCommandService.handle(updatePostCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (post.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+        Optional<Post> post = postCommandService.handle(updatePostCommand);
+        if (post.isEmpty()) return ResponseEntity.badRequest().build();
         var postResource = PostResourceFromEntityAssembler.toResourceFromEntity(post.get());
         return ResponseEntity.ok(postResource);
     }
@@ -106,11 +92,7 @@ public class PostsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePost(@PathVariable Long id) {
         var deletePostCommand = new DeletePostCommand(id);
-        try{
-            postCommandService.handle(deletePostCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        postCommandService.handle(deletePostCommand);
         return ResponseEntity.ok("Post with id " + id + " successfully deleted");
     }
 }

@@ -1,4 +1,4 @@
-package com.agrotech.api.profile.domain.exceptions;
+package com.agrotech.api.shared.domain.exceptions;
 
 public class AdvisorNotFoundException extends RuntimeException {
     public AdvisorNotFoundException(Long id) {

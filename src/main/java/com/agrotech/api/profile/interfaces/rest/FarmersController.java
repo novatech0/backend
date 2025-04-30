@@ -44,9 +44,7 @@ public class FarmersController {
     public ResponseEntity<FarmerResource> getFarmerById(@PathVariable Long id) {
         var getFarmerByIdQuery = new GetFarmerByIdQuery(id);
         var farmer = farmerQueryService.handle(getFarmerByIdQuery);
-        if (farmer.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (farmer.isEmpty()) return ResponseEntity.notFound().build();
         var farmerResource = FarmerResourceFromEntityAssembler.toResourceFromEntity(farmer.get());
         return ResponseEntity.ok(farmerResource);
     }
@@ -55,9 +53,7 @@ public class FarmersController {
     public ResponseEntity<FarmerResource> getAdvisorByUserId(@PathVariable Long userId) {
         var getFarmerByUserIdQuery = new GetFarmerByUserIdQuery(userId);
         var farmer = farmerQueryService.handle(getFarmerByUserIdQuery);
-        if (farmer.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (farmer.isEmpty()) return ResponseEntity.notFound().build();
         var farmerResource = FarmerResourceFromEntityAssembler.toResourceFromEntity(farmer.get());
         return ResponseEntity.ok(farmerResource);
     }
@@ -65,11 +61,7 @@ public class FarmersController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFarmer(@PathVariable Long id) {
         var deleteFarmerCommand = new DeleteFarmerCommand(id);
-        try {
-            farmerCommandService.handle(deleteFarmerCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage());
-        }
+        farmerCommandService.handle(deleteFarmerCommand);
         return ResponseEntity.ok().body("Farmer with id " + id + " deleted successfully");
     }
 }

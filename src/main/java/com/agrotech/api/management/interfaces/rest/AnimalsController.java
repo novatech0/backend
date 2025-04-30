@@ -61,9 +61,7 @@ public class AnimalsController {
     public ResponseEntity<AnimalResource> getAnimalById(@PathVariable Long id) {
         var getAnimalByIdQuery = new GetAnimalByIdQuery(id);
         var animal = animalQueryService.handle(getAnimalByIdQuery);
-        if (animal.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (animal.isEmpty()) return ResponseEntity.notFound().build();
         var animalResource = AnimalResourceFromEntityAssembler.toResourceFromEntity(animal.get());
         return ResponseEntity.ok(animalResource);
     }
@@ -71,13 +69,7 @@ public class AnimalsController {
     @PostMapping
     public ResponseEntity<AnimalResource> createAnimal(@RequestBody CreateAnimalResource createAnimalResource) {
         var createAnimalCommand = CreateAnimalCommandFromResourceAssembler.toCommandFromResource(createAnimalResource);
-        Long animalId;
-        try {
-            animalId = animalCommandService.handle(createAnimalCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (animalId == 0L) return ResponseEntity.badRequest().build();
+        Long animalId = animalCommandService.handle(createAnimalCommand);
         var animal = animalQueryService.handle(new GetAnimalByIdQuery(animalId));
         if (animal.isEmpty()) return ResponseEntity.badRequest().build();
         var animalResource = AnimalResourceFromEntityAssembler.toResourceFromEntity(animal.get());
@@ -87,12 +79,7 @@ public class AnimalsController {
     @PutMapping("/{id}")
     public ResponseEntity<AnimalResource> updateAnimal(@PathVariable Long id, @RequestBody UpdateAnimalResource updateAnimalResource) {
         var updateAnimalCommand = UpdateAnimalCommandFromResourceAssembler.toCommandFromResource(id, updateAnimalResource);
-        Optional<Animal> animal;
-        try {
-            animal = animalCommandService.handle(updateAnimalCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        Optional<Animal> animal = animalCommandService.handle(updateAnimalCommand);
         if (animal.isEmpty()) return ResponseEntity.notFound().build();
         var animalResource = AnimalResourceFromEntityAssembler.toResourceFromEntity(animal.get());
         return ResponseEntity.ok(animalResource);
@@ -101,11 +88,7 @@ public class AnimalsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAnimal(@PathVariable Long id) {
         var deleteAnimalCommand = new DeleteAnimalCommand(id);
-        try {
-            animalCommandService.handle(deleteAnimalCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        animalCommandService.handle(deleteAnimalCommand);
         return ResponseEntity.ok().body("Animal with id " + id + " deleted successfully.");
     }
 }

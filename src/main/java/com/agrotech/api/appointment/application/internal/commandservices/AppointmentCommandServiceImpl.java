@@ -2,6 +2,7 @@ package com.agrotech.api.appointment.application.internal.commandservices;
 
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.exceptions.*;
+import com.agrotech.api.shared.domain.exceptions.*;
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.CreateAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -41,7 +41,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
 
         // Verification of Status
         if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED)$")) {
-            throw new IncorrectStatusException(command.status());
+            throw new InvalidStatusException(command.status());
         }
         //Verification Start time and End time are in the format HH:mm
         if (!command.startTime().matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$") || !command.endTime().matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
@@ -61,7 +61,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
         if (appointment.isEmpty()) return Optional.empty();
         // Verification of Status
         if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED)$")) {
-            throw new IncorrectStatusException(command.status());
+            throw new InvalidStatusException(command.status());
         }
         //Verification Start time and End time are in the format HH:mm
         if (!command.startTime().matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$") || !command.endTime().matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {

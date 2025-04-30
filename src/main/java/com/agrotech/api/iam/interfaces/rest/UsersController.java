@@ -53,9 +53,7 @@ public class UsersController {
     public ResponseEntity<UserResource> getUserById(@PathVariable Long id) {
         var getUserByIdQuery = new GetUserByIdQuery(id);
         var user = userQueryService.handle(getUserByIdQuery);
-        if (user.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (user.isEmpty()) return ResponseEntity.notFound().build();
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return ResponseEntity.ok(userResource);
     }

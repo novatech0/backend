@@ -1,7 +1,6 @@
 package com.agrotech.api.appointment.application.internal.commandservices;
 
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
-import com.agrotech.api.appointment.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.appointment.domain.exceptions.AvailableDateNotFoundException;
 import com.agrotech.api.appointment.domain.exceptions.IncorrectTimeFormatException;
 import com.agrotech.api.appointment.domain.model.commands.CreateAvailableDateCommand;
@@ -10,6 +9,7 @@ import com.agrotech.api.appointment.domain.model.commands.UpdateAvailableDateCom
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.services.AvailableDateCommandService;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.AvailableDateRepository;
+import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

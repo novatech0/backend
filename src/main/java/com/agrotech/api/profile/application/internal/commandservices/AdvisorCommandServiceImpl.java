@@ -1,8 +1,8 @@
 package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
-import com.agrotech.api.profile.domain.exceptions.AdvisorNotFoundException;
-import com.agrotech.api.profile.domain.exceptions.SameUserException;
+import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
+import com.agrotech.api.profile.domain.exceptions.UserAlreadyUsedException;
 import com.agrotech.api.profile.domain.model.commands.CreateAdvisorCommand;
 import com.agrotech.api.profile.domain.model.commands.DeleteAdvisorCommand;
 import com.agrotech.api.profile.domain.model.commands.UpdateAdvisorCommand;
@@ -25,7 +25,7 @@ public class AdvisorCommandServiceImpl implements AdvisorCommandService {
     public Long handle(CreateAdvisorCommand command, User user) {
         var sameUser = advisorRepository.findByUser_Id(command.userId());
         if (sameUser.isPresent()) {
-            throw new SameUserException(command.userId());
+            throw new UserAlreadyUsedException(command.userId());
         }
         Advisor advisor = new Advisor(user);
         advisorRepository.save(advisor);

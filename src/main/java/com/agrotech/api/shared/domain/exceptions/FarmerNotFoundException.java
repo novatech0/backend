@@ -1,4 +1,4 @@
-package com.agrotech.api.profile.domain.exceptions;
+package com.agrotech.api.shared.domain.exceptions;
 
 public class FarmerNotFoundException extends RuntimeException {
     public FarmerNotFoundException(Long id) {

@@ -44,9 +44,7 @@ public class AdvisorsController {
     public ResponseEntity<AdvisorResource> getAdvisorById(@PathVariable Long id) {
         var getAdvisorByIdQuery = new GetAdvisorByIdQuery(id);
         var advisor = advisorQueryService.handle(getAdvisorByIdQuery);
-        if (advisor.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (advisor.isEmpty()) return ResponseEntity.notFound().build();
         var advisorResource = AdvisorResourceFromEntityAssembler.toResourceFromEntity(advisor.get());
         return ResponseEntity.ok(advisorResource);
     }
@@ -55,9 +53,7 @@ public class AdvisorsController {
     public ResponseEntity<AdvisorResource> getAdvisorByUserId(@PathVariable Long userId) {
         var getAdvisorByUserIdQuery = new GetAdvisorByUserIdQuery(userId);
         var advisor = advisorQueryService.handle(getAdvisorByUserIdQuery);
-        if (advisor.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (advisor.isEmpty()) return ResponseEntity.notFound().build();
         var advisorResource = AdvisorResourceFromEntityAssembler.toResourceFromEntity(advisor.get());
         return ResponseEntity.ok(advisorResource);
     }
@@ -65,11 +61,7 @@ public class AdvisorsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAdvisor(@PathVariable Long id) {
         var deleteAdvisorCommand = new DeleteAdvisorCommand(id);
-        try {
-            advisorCommandService.handle(deleteAdvisorCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage());
-        }
+        advisorCommandService.handle(deleteAdvisorCommand);
         return ResponseEntity.ok().body("Advisor with id " + id + " deleted successfully");
     }
 }

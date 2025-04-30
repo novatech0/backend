@@ -1,5 +1,6 @@
 package com.agrotech.api.iam.domain.model.entities;
 
+import com.agrotech.api.iam.domain.exceptions.InvalidRoleException;
 import com.agrotech.api.iam.domain.model.valueobjects.Roles;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,44 +35,26 @@ public class Role {
         this.name = name;
     }
 
-    /**
-     * Get the name of the role as a string
-     * @return the name of the role as a string
-     */
     public String getStringName() {
         return name.name();
     }
 
-    /**
-     * Get the default role
-     * @return the default role
-     */
     public static Role getDefaultRole() {
         return new Role(Roles.ROLE_USER);
     }
 
-    /**
-     * Get the role from its name
-     * @param name the name of the role
-     * @return the role
-     */
     public static Role toRoleFromName(String name) {
-        return new Role(Roles.valueOf(name));
+        try {
+            return new Role(Roles.valueOf(name));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRoleException(name);
+        }
     }
 
-    /**
-     * Validate the role set
-     * <p>
-     *     This method validates the role set and returns the default role if the set is empty.
-     * </p>
-     * @param roles the role set
-     * @return the role set
-     */
     public static List<Role> validateRoleSet(List<Role> roles) {
         if (roles == null || roles.isEmpty()) {
             return List.of(getDefaultRole());
         }
         return roles;
     }
-
 }

@@ -1,5 +1,6 @@
 package com.agrotech.api.appointment.interfaces.rest;
 
+import com.agrotech.api.appointment.domain.exceptions.AppointmentNotFoundException;
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
@@ -72,9 +73,7 @@ public class AppointmentsController {
     public ResponseEntity<AppointmentResource> getAppointmentById(@PathVariable Long id) {
         var getAppointmentByIdQuery = new GetAppointmentByIdQuery(id);
         var appointment = appointmentQueryService.handle(getAppointmentByIdQuery);
-        if (appointment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (appointment.isEmpty()) throw new AppointmentNotFoundException(id);
         var appointmentResource = AppointmentResourceFromEntityAssembler.toResourceFromEntity(appointment.get());
         return ResponseEntity.ok(appointmentResource);
     }
@@ -82,13 +81,7 @@ public class AppointmentsController {
     @PostMapping
     public ResponseEntity<AppointmentResource> createAppointment(@RequestBody CreateAppointmentResource createAppointmentResource) {
         var createAppointmentCommand = CreateAppointmentCommandFromResourceAssembler.toCommandFromResource(createAppointmentResource);
-        Long appointmentId;
-        try {
-            appointmentId = appointmentCommandService.handle(createAppointmentCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (appointmentId == 0L) return ResponseEntity.badRequest().build();
+        Long appointmentId = appointmentCommandService.handle(createAppointmentCommand);
         var appointment = appointmentQueryService.handle(new GetAppointmentByIdQuery(appointmentId));
         if (appointment.isEmpty()) return ResponseEntity.badRequest().build();
         var appointmentResource = AppointmentResourceFromEntityAssembler.toResourceFromEntity(appointment.get());
@@ -99,15 +92,8 @@ public class AppointmentsController {
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentResource> updateAppointment(@PathVariable Long id, @RequestBody UpdateAppointmentResource updateAppointmentResource) {
         var updateAppointmentCommand = UpdateAppointmentCommandFromResourceAssembler.toCommandFromResource(id, updateAppointmentResource);
-        Optional<Appointment> appointment;
-        try {
-            appointment = appointmentCommandService.handle(updateAppointmentCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if (appointment.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        Optional<Appointment> appointment = appointmentCommandService.handle(updateAppointmentCommand);
+        if (appointment.isEmpty()) return ResponseEntity.notFound().build();
         var appointmentResource = AppointmentResourceFromEntityAssembler.toResourceFromEntity(appointment.get());
         return ResponseEntity.ok(appointmentResource);
     }
@@ -115,11 +101,7 @@ public class AppointmentsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAppointment(@PathVariable Long id) {
         var deleteAppointmentCommand = new DeleteAppointmentCommand(id);
-        try {
-            appointmentCommandService.handle(deleteAppointmentCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage());
-        }
+        appointmentCommandService.handle(deleteAppointmentCommand);
         return ResponseEntity.ok().body("Appointment with id " + id + " deleted successfully");
     }
 }
