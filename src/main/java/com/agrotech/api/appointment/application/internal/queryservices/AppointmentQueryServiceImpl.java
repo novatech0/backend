@@ -43,14 +43,14 @@ public class AppointmentQueryServiceImpl implements AppointmentQueryService {
 
     @Override
     public List<Appointment> handle(GetAppointmentsByAdvisorIdQuery query) {
-        List<Appointment> appointments = this.appointmentRepository.findByAdvisor_Id(query.advisorId());
+        List<Appointment> appointments = this.appointmentRepository.findByAvailableDate_Advisor_Id(query.advisorId());
         appointmentCommandService.updateAppointmentStatuses(appointments);
         return appointments;
     }
 
     @Override
     public List<Appointment> handle(GetAppointmentsByAdvisorIdAndFarmerIdQuery query) {
-        List<Appointment> appointments = this.appointmentRepository.findByAdvisor_IdAndFarmer_Id(query.advisorId(), query.farmerId());
+        List<Appointment> appointments = this.appointmentRepository.findByAvailableDate_Advisor_IdAndFarmer_Id(query.advisorId(), query.farmerId());
         appointmentCommandService.updateAppointmentStatuses(appointments);
         return appointments;
     }

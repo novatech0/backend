@@ -4,7 +4,8 @@ import java.time.LocalDate;
 
 public record AvailableDateResource(Long id,
                                     Long advisorId,
-                                    LocalDate availableDate,
+                                    LocalDate scheduledDate,
                                     String startTime,
-                                    String endTime) {
+                                    String endTime,
+                                    String status) {
 }

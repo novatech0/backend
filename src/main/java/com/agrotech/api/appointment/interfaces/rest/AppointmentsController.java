@@ -3,8 +3,6 @@ package com.agrotech.api.appointment.interfaces.rest;
 import com.agrotech.api.appointment.domain.exceptions.AppointmentNotFoundException;
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
-import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
-import com.agrotech.api.appointment.domain.model.events.DeleteAvailableDateByAppointmentCreated;
 import com.agrotech.api.appointment.domain.model.queries.*;
 import com.agrotech.api.appointment.domain.services.AppointmentCommandService;
 import com.agrotech.api.appointment.domain.services.AppointmentQueryService;
@@ -15,7 +13,6 @@ import com.agrotech.api.appointment.interfaces.rest.transform.AppointmentResourc
 import com.agrotech.api.appointment.interfaces.rest.transform.CreateAppointmentCommandFromResourceAssembler;
 import com.agrotech.api.appointment.interfaces.rest.transform.UpdateAppointmentCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -21,6 +21,12 @@ public class AppointmentExceptionsHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(SameAvailableDateException.class)
+    public ResponseEntity<ErrorResponseDTO> handleSameAvailableDateException(SameAvailableDateException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Same Available Date", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleReviewNotFoundException(ReviewNotFoundException e) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO("Review Not Found", e.getMessage());
@@ -45,6 +51,12 @@ public class AppointmentExceptionsHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(InvalidTimeRangeException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidTimeRangeException(InvalidTimeRangeException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Invalid Time Range", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(IncorrectTimeFormatException.class)
     public ResponseEntity<ErrorResponseDTO> handleIncorrectTimeFormatException(IncorrectTimeFormatException e) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO("Incorrect Time Format", e.getMessage());
@@ -54,6 +66,12 @@ public class AppointmentExceptionsHandler {
     @ExceptionHandler(ReviewAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDTO> handleReviewAlreadyExistsException(ReviewAlreadyExistsException e) {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO("Review Already Exists", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidAvailableDateException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidAvailableDateException(InvalidAvailableDateException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Invalid Available Date", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

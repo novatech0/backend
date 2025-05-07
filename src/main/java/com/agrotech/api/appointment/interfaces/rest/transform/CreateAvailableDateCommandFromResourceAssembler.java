@@ -7,7 +7,7 @@ public class CreateAvailableDateCommandFromResourceAssembler {
     public static CreateAvailableDateCommand toCommandFromResource(CreateAvailableDateResource resource){
         return new CreateAvailableDateCommand(
                 resource.advisorId(),
-                resource.availableDate(),
+                resource.scheduledDate(),
                 resource.startTime(),
                 resource.endTime()
         );

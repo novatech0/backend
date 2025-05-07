@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public record GetAvailableDateByAdvisorIdAndDate(
         Long advisorId,
-        LocalDate availableDate,
+        LocalDate scheduledDate,
         String startTime,
         String endTime
 ) {

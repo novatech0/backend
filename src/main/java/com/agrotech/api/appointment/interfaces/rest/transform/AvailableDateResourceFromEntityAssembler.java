@@ -8,9 +8,10 @@ public class AvailableDateResourceFromEntityAssembler {
         return new AvailableDateResource(
                 entity.getId(),
                 entity.getAdvisorId(),
-                entity.getAvailableDate(),
+                entity.getScheduledDate(),
                 entity.getStartTime(),
-                entity.getEndTime()
+                entity.getEndTime(),
+                entity.getAvailableDateStatus()
         );
     }
 }

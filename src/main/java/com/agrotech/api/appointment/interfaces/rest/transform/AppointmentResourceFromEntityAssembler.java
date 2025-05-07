@@ -7,13 +7,10 @@ public class AppointmentResourceFromEntityAssembler {
     public static AppointmentResource toResourceFromEntity(Appointment entity){
         return new AppointmentResource(
                 entity.getId(),
-                entity.getAdvisorId(),
                 entity.getFarmerId(),
+                entity.getAvailableDateId(),
                 entity.getMessage(),
                 entity.getAppointmentStatus(),
-                entity.getScheduledDate(),
-                entity.getStartTime(),
-                entity.getEndTime(),
                 entity.getMeetingUrl()
         );
     }

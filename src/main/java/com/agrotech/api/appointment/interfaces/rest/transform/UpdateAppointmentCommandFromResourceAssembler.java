@@ -8,10 +8,7 @@ public class UpdateAppointmentCommandFromResourceAssembler {
         return new UpdateAppointmentCommand(
                 id,
                 resource.message(),
-                resource.status(),
-                resource.scheduledDate(),
-                resource.startTime(),
-                resource.endTime()
+                resource.status()
         );
     }
 }

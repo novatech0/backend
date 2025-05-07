@@ -2,9 +2,7 @@ package com.agrotech.api.appointment.interfaces.rest;
 
 import com.agrotech.api.appointment.domain.model.commands.DeleteAvailableDateCommand;
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
-import com.agrotech.api.appointment.domain.model.queries.GetAllAvailableDatesQuery;
-import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByIdQuery;
-import com.agrotech.api.appointment.domain.model.queries.GetAvailableDatesByAdvisorIdQuery;
+import com.agrotech.api.appointment.domain.model.queries.*;
 import com.agrotech.api.appointment.domain.services.AvailableDateCommandService;
 import com.agrotech.api.appointment.domain.services.AvailableDateQueryService;
 import com.agrotech.api.appointment.interfaces.rest.resources.AvailableDateResource;
@@ -40,16 +38,25 @@ public class AvailableDatesController {
 
     @GetMapping
     public ResponseEntity<List<AvailableDateResource>> getAvailableDates(
-            @RequestParam(value = "advisorId", required = false) Long advisorId) {
+            @RequestParam(value = "advisorId", required = false) Long advisorId,
+            @RequestParam(value = "isAvailable", required = false) Boolean isAvailable) {
 
         List<AvailableDate> availableDates;
 
-        if (advisorId != null) {
+        if (advisorId != null && isAvailable != null) {
+            String status = isAvailable ? "AVAILABLE" : "UNAVAILABLE";
+            var query = new GetAvailableDateByAdvisorIdAndStatusQuery(advisorId, status);
+            availableDates = availableDateQueryService.handle(query);
+        } else if (advisorId != null) {
             var query = new GetAvailableDatesByAdvisorIdQuery(advisorId);
             availableDates = availableDateQueryService.handle(query);
+        } else if (isAvailable != null) {
+            String status = isAvailable ? "AVAILABLE" : "UNAVAILABLE";
+            var query = new GetAvailableDateByStatusQuery(status);
+            availableDates = availableDateQueryService.handle(query);
         } else {
-            var getAllAvailableDatesQuery = new GetAllAvailableDatesQuery();
-            availableDates = availableDateQueryService.handle(getAllAvailableDatesQuery);
+            var query = new GetAllAvailableDatesQuery();
+            availableDates = availableDateQueryService.handle(query);
         }
 
         var availableDateResources = availableDates.stream()
@@ -58,8 +65,6 @@ public class AvailableDatesController {
 
         return ResponseEntity.ok(availableDateResources);
     }
-
-
     @GetMapping("/{id}")
     public ResponseEntity<AvailableDateResource> getAvailableDateById(@PathVariable Long id) {
         var getAvailableDateByIdQuery = new GetAvailableDateByIdQuery(id);
@@ -74,13 +79,7 @@ public class AvailableDatesController {
     @PostMapping
     public ResponseEntity<AvailableDateResource> createAvailableDate(@RequestBody CreateAvailableDateResource createAvailableDateResource) {
         var createAvailableDateCommand = CreateAvailableDateCommandFromResourceAssembler.toCommandFromResource(createAvailableDateResource);
-        Long availableDateId;
-        try {
-            availableDateId = availableDateCommandService.handle(createAvailableDateCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
-        if(availableDateId == 0L) return ResponseEntity.badRequest().build();
+        Long availableDateId = availableDateCommandService.handle(createAvailableDateCommand);
         var availableDate = availableDateQueryService.handle(new GetAvailableDateByIdQuery(availableDateId));
         if(availableDate.isEmpty()) return ResponseEntity.badRequest().build();
         var availableDateResource = AvailableDateResourceFromEntityAssembler.toResourceFromEntity(availableDate.get());
@@ -90,12 +89,7 @@ public class AvailableDatesController {
     @PutMapping("/{id}")
     public ResponseEntity<AvailableDateResource> updateAvailableDate(@PathVariable Long id, @RequestBody UpdateAvailableDateResource updateAvailableDateResource) {
         var updateAvailableDateCommand = UpdateAvailableDateCommandFromResourceAssembler.toCommandFromResource(id, updateAvailableDateResource);
-        Optional<AvailableDate> availableDate;
-        try {
-            availableDate = availableDateCommandService.handle(updateAvailableDateCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
-        }
+        Optional<AvailableDate> availableDate = availableDateCommandService.handle(updateAvailableDateCommand);
         if(availableDate.isEmpty()) return ResponseEntity.notFound().build();
         var availableDateResource = AvailableDateResourceFromEntityAssembler.toResourceFromEntity(availableDate.get());
         return ResponseEntity.ok(availableDateResource);
@@ -104,11 +98,7 @@ public class AvailableDatesController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAvailableDate(@PathVariable Long id) {
         var deleteAvailableDateCommand = new DeleteAvailableDateCommand(id);
-        try {
-            availableDateCommandService.handle(deleteAvailableDateCommand);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getLocalizedMessage());
-        }
+        availableDateCommandService.handle(deleteAvailableDateCommand);
         return ResponseEntity.ok().body("Available Date with id " + id + " deleted successfully");
     }
 }

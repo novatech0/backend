@@ -7,7 +7,7 @@ public class UpdateAvailableDateCommandFromResourceAssembler {
     public static UpdateAvailableDateCommand toCommandFromResource(Long id, UpdateAvailableDateResource resource){
         return new UpdateAvailableDateCommand(
                 id,
-                resource.availableDate(),
+                resource.scheduledDate(),
                 resource.startTime(),
                 resource.endTime()
         );

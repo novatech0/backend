@@ -3,14 +3,14 @@ package com.agrotech.api.appointment.application.internal.eventhandlers;
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalNotificationsService;
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.exceptions.AvailableDateNotFoundException;
-import com.agrotech.api.appointment.domain.model.commands.DeleteAvailableDateCommand;
+import com.agrotech.api.appointment.domain.model.commands.UpdateAvailableDateStatusCommand;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
-import com.agrotech.api.appointment.domain.model.events.DeleteAvailableDateByAppointmentCreated;
-import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByAdvisorIdAndDate;
+import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByIdQuery;
 import com.agrotech.api.appointment.domain.services.AvailableDateCommandService;
 import com.agrotech.api.appointment.domain.services.AvailableDateQueryService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -33,28 +33,27 @@ public class AppointmentCreatedEventHandler {
     }
 
     @EventListener
-    public void onAppointmentCreatedCreateNotification(CreateNotificationByAppointmentCreated event) {
+    @Transactional
+    public void onAppointmentCreated(CreateNotificationByAppointmentCreated event) {
         Date date = new Date();
 
-        var farmer = externalProfilesService.fetchFarmerById(event.getFarmerId()).orElseThrow();
-        var advisor = externalProfilesService.fetchAdvisorById(event.getAdvisorId()).orElseThrow();
-        var profileFarmer = externalProfilesService.fetchProfileByFarmerId(event.getFarmerId()).orElseThrow();
-        var profileAdvisor = externalProfilesService.fetchProfileByAdvisorId(event.getAdvisorId()).orElseThrow();
+        var availableDate = availableDateQueryService.handle(new GetAvailableDateByIdQuery(event.getAvailableDateId()))
+                .orElseThrow(() -> new AvailableDateNotFoundException(event.getAvailableDateId()));
 
-        var meetingUrl = "https://meet.jit.si/agrotechMeeting" + event.getFarmerId() + "-" + event.getAdvisorId();
+        availableDateCommandService.handle(new UpdateAvailableDateStatusCommand(event.getAvailableDateId(),"UNAVAILABLE"));
+
+        var farmer = externalProfilesService.fetchFarmerById(event.getFarmerId()).orElseThrow();
+        var advisor = externalProfilesService.fetchAdvisorById(availableDate.getAdvisorId()).orElseThrow();
+        var profileFarmer = externalProfilesService.fetchProfileByFarmerId(event.getFarmerId()).orElseThrow();
+        var profileAdvisor = externalProfilesService.fetchProfileByAdvisorId(availableDate.getAdvisorId()).orElseThrow();
+
+        var meetingUrl = "https://meet.jit.si/agrotechMeeting" + event.getFarmerId() + "-" + availableDate.getAdvisorId();
+
         externalNotificationsService.createNotification(farmer.getUserId(), "Proximo Asesoramiento",
                 "Tienes un asesoramiento programado con " + profileAdvisor.getFirstName() + " " + profileAdvisor.getLastName(),
                 date);
         externalNotificationsService.createNotification(advisor.getUserId(), "Proximo Asesoramiento",
                 "Tienes una asesoria programada con " + profileFarmer.getFirstName() + " " + profileFarmer.getLastName(),
                 date);
-    }
-
-    @EventListener
-    public void onAppointmentCreatedDeleteAvailableDate(DeleteAvailableDateByAppointmentCreated event) {
-        var query = new GetAvailableDateByAdvisorIdAndDate(event.getAdvisorId(), event.getScheduledDate(), event.getStartTime(), event.getEndTime()
-        );
-        var availableDate = availableDateQueryService.handle(query).orElseThrow(AvailableDateNotFoundException::new);
-        availableDateCommandService.handle(new DeleteAvailableDateCommand(availableDate.getId()));
     }
 }
