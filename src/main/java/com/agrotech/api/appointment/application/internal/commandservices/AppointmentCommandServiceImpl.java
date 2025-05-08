@@ -58,7 +58,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
 
         Appointment appointment = new Appointment(command, meetingUrl, farmer.get(), availableDate.get());
         appointmentRepository.save(appointment);
-        eventPublisher.publishEvent(new CreateNotificationByAppointmentCreated(this, command.farmerId(), advisor.get().getId()));
+        eventPublisher.publishEvent(new CreateNotificationByAppointmentCreated(this, command.farmerId(), command.availableDateId()));
         return appointment.getId();
     }
 
@@ -82,7 +82,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
         if (appointment.isEmpty()) throw new AppointmentNotFoundException(command.id());
         var availableDate = availableDateQueryService.handle(new GetAvailableDateByIdQuery(appointment.get().getAvailableDateId()));
         if (availableDate.isEmpty()) throw new AvailableDateNotFoundException(appointment.get().getAvailableDateId());
-        eventPublisher.publishEvent(new CreateNotificationByAppointmentCancelled(this, availableDate.get().getAdvisorId()));
+        eventPublisher.publishEvent(new CreateNotificationByAppointmentCancelled(this, availableDate.get().getId()));
         appointmentRepository.delete(appointment.get());
     }
 
