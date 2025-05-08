@@ -6,8 +6,8 @@ import com.agrotech.api.appointment.interfaces.rest.resources.CreateAppointmentR
 public class CreateAppointmentCommandFromResourceAssembler {
     public static CreateAppointmentCommand toCommandFromResource(CreateAppointmentResource resource){
         return new CreateAppointmentCommand(
-                resource.farmerId(),
                 resource.availableDateId(),
+                resource.farmerId(),
                 resource.message()
         );
     }
