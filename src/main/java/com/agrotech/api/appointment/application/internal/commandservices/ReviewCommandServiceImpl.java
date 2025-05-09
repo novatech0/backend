@@ -36,9 +36,8 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
         Review review = new Review(command, advisor.get(), farmer.get());
-        reviewRepository.save(review);
-        updateAdvisorRating(command.advisorId());
-        return review.getId();
+        Review savedReview = reviewRepository.save(review);        updateAdvisorRating(command.advisorId());
+        return savedReview.getId();
     }
 
     @Override

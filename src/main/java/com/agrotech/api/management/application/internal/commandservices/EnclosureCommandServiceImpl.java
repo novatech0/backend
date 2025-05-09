@@ -25,12 +25,12 @@ public class EnclosureCommandServiceImpl implements EnclosureCommandService {
 
     @Override
     public Long handle(CreateEnclosureCommand command) {
-        var farmer = farmerRepository.findById(command.farmerId());
+        var farmer = farmerRepository.findByUser_Id(command.farmerId());
         if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
 
         Enclosure enclosure = new Enclosure(command, farmer.get());
-        enclosureRepository.save(enclosure);
-        return enclosure.getId();
+        Enclosure farmersave = enclosureRepository.save(enclosure);
+        return farmersave.getId();
     }
 
     @Override
