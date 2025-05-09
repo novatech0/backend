@@ -12,6 +12,7 @@ import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.An
 import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -23,7 +24,7 @@ class AnimalCommandServiceImplTest {
     private AnimalRepository animalRepository;
     @Mock
     private EnclosureRepository enclosureRepository;
-    @Mock
+    @InjectMocks
     private AnimalCommandServiceImpl animalCommandService;
     @BeforeEach
     void setUp() {
@@ -51,11 +52,9 @@ class AnimalCommandServiceImplTest {
         Animal mockAnimal = Mockito.mock(Animal.class);
 
         when(enclosureRepository.findById(enclosureId)).thenReturn(Optional.of(mockEnclosure));
-        when(animalRepository.save(any(Animal.class))).thenAnswer(invocation -> {
-            Animal savedAnimal = invocation.getArgument(0);
-            when(savedAnimal.getId()).thenReturn(expectedAnimalId);
-            return savedAnimal;
-        });
+        when(mockAnimal.getId()).thenReturn(expectedAnimalId);
+
+        when(animalRepository.save(any(Animal.class))).thenReturn(mockAnimal);
 
         // Act
         Long actualAnimalId = animalCommandService.handle(command);

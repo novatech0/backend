@@ -30,8 +30,8 @@ public class AnimalCommandServiceImpl implements AnimalCommandService {
         if (enclosure.isEmpty()) throw new EnclosureNotFoundException(command.enclosureId());
 
         Animal animal = new Animal(command, enclosure.get());
-        animalRepository.save(animal);
-        return animal.getId();
+        Animal animalsave = animalRepository.save(animal);
+        return animalsave.getId();
     }
 
     @Override
