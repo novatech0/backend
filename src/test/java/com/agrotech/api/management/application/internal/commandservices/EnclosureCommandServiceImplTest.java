@@ -42,19 +42,17 @@ class EnclosureCommandServiceImplTest {
         Farmer farmer = Mockito.mock(Farmer.class);
         Enclosure enclosure = Mockito.mock(Enclosure.class);
 
-        when(farmerRepository.findByUser_Id(farmerId)).thenReturn(Optional.of(farmer));
-        when(enclosureRepository.save(any(Enclosure.class))).thenAnswer(invocation -> {
-            Enclosure savedEnclosure = invocation.getArgument(0);
-            doReturn(enclosureId).when(savedEnclosure).getId();
-            return savedEnclosure;
-        });
+        when(farmerRepository.findById(farmerId)).thenReturn(Optional.of(farmer));
+        when(enclosure.getId()).thenReturn(enclosureId);
+        when(enclosureRepository.save(any(Enclosure.class))).thenReturn(enclosure);
 
         // Act
         Long result = enclosureCommandService.handle(command);
 
         // Assert
         assertEquals(enclosureId, result);
-        Mockito.verify(farmerRepository).findByUser_Id(farmerId);
+        Mockito.verify(farmerRepository).findById(farmerId);
         Mockito.verify(enclosureRepository).save(Mockito.any(Enclosure.class));
+
     }
 }
