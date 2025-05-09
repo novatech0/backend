@@ -28,8 +28,8 @@ public class PostCommandServiceImpl implements PostCommandService {
         var advisor = externalProfileService.fetchAdvisorById(command.advisorId())
                 .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
         Post post = new Post(command, advisor);
-        postRepository.save(post);
-        return post.getId();
+        Post postsave=postRepository.save(post);
+        return postsave.getId();
     }
 
     @Override
