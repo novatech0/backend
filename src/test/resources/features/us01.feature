@@ -1,7 +1,7 @@
 Feature: Visualización del catálogo de asesores
   Como granjero con poca experiencia
-  Quiero explorar el catálogo de asesores
-  Para conocer quiénes me pueden apoyar con asesorías
+  quiero explorar el catálogo de asesores
+  para conocer quiénes me pueden apoyar con asesorías
 
   Scenario: Explorar catálogo de asesores
     Given el granjero con poca experiencia quiere explorar el catálogo de asesores
@@ -14,3 +14,4 @@ Feature: Visualización del catálogo de asesores
     And se encuentra en el apartado de "Asesores"
     When seleccione el botón de filtros
     Then el sistema le permitirá filtrar el catálogo de asesores por nombre o reputación
+

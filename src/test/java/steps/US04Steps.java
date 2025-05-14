@@ -1,12 +1,12 @@
 package steps;
 
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.When;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 
-public class ManagementSteps {
-
+public class US04Steps {
+    // Programación de citas
     @Given("el granjero con poca experiencia desea programar una cita")
     public void el_granjero_con_poca_experiencia_desea_programar_una_cita() {
         System.out.println("El granjero desea programar una cita.");

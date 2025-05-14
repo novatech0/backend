@@ -1,7 +1,7 @@
 Feature: Programación de citas con asesores
   Como granjero con poca experiencia
-  Quiero programar una cita con un asesor
-  Para recibir orientación personalizada en el sector agropecuario
+  quiero programar una cita con un asesor
+  para recibir orientación personalizada en el sector agropecuario
 
   Scenario: Programar cita
     Given el granjero con poca experiencia desea programar una cita

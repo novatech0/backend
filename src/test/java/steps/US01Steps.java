@@ -1,12 +1,11 @@
 package steps;
 
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.When;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 
-public class IamSteps {
-
+public class US01Steps {
     @Given("el granjero con poca experiencia quiere explorar el catálogo de asesores")
     public void el_granjero_con_poca_experiencia_quiere_explorar_el_catálogo_de_asesores() {
         System.out.println("El granjero quiere explorar el catálogo de asesores.");
