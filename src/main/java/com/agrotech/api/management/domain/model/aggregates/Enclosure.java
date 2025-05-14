@@ -22,7 +22,6 @@ public class Enclosure extends AuditableAbstractAggregateRoot<Enclosure> {
     private String name;
     @NotNull(message = "Capacity is required")
     @Min(value = 1, message = "Capacity must be greater than 0")
-    // More than 0
     private Integer capacity;
     @NotNull(message = "Type is required")
     @NotBlank(message = "Type cannot be blank")
