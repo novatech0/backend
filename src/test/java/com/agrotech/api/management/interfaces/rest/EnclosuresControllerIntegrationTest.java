@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = AgrotechApplication.class)
 @AutoConfigureMockMvc
 @Transactional
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class EnclosuresControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
