@@ -3,6 +3,8 @@ Feature: Inicio de sesión
   quiero acceder a mi cuenta registrada
   para acceder a las funciones de usuario
 
+  # Para este escenario, se requiere que el usuario example@gmail.com
+  # esté registrado con la contraseña 12345678 en la base de datos
   Scenario Outline: Inicio de sesión exitoso
     Given el usuario quiere loguearse con el servicio
     When el usuario ingrese su usuario "<user>" y contraseña "<password>"
