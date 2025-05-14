@@ -16,6 +16,7 @@ import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.repositories.FarmerRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,12 +53,22 @@ class EnclosuresControllerIntegrationTest {
     @Autowired
     private UserCommandService userCommandService;
 
-    @Test
-    void postEnclosure() throws Exception {
-        // Arrange
+    private String token;
+    private Farmer farmer;
+
+    @BeforeEach
+    void setup() {
         Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
         String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
         Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
+
+        this.token = token;
+        this.farmer = farmer;
+    }
+
+    @Test
+    void postEnclosure() throws Exception {
+        // Arrange
         CreateEnclosureResource enclosure = new CreateEnclosureResource("Enclosure 1", 100, "Grassland", farmer.getId());
 
         // Act
@@ -89,9 +100,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void postEnclosureWithInvalidData() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         CreateEnclosureResource enclosure = new CreateEnclosureResource("", -1, "", farmer.getId());
 
         // Act
@@ -106,8 +114,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void postEnclosureWithNonExistentFarmer() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
         CreateEnclosureResource enclosure = new CreateEnclosureResource("Enclosure 1", 100, "Grassland", 999L); // Non-existent farmer ID
         // Act
         mockMvc.perform(post("/api/v1/enclosures")
@@ -122,9 +128,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void getEnclosures() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         CreateEnclosureCommand enclosure1 = new CreateEnclosureCommand("Enclosure 1", 100, "Grassland", farmer.getId());
         CreateEnclosureCommand enclosure2 = new CreateEnclosureCommand("Enclosure 2", 200, "Forest", farmer.getId());
 
@@ -158,9 +161,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void getEnclosureById() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         CreateEnclosureCommand enclosure1 = new CreateEnclosureCommand("Enclosure 1", 100, "Grassland", farmer.getId());
         CreateEnclosureCommand enclosure2 = new CreateEnclosureCommand("Enclosure 2", 200, "Forest", farmer.getId());
         Enclosure enclosureEntity1 = enclosureRepository.save(new Enclosure(enclosure1, farmer));
@@ -189,9 +189,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void getEnclosureByIdWithNonExistentId() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         CreateEnclosureCommand enclosure1 = new CreateEnclosureCommand("Enclosure 1", 100, "Grassland", farmer.getId());
         CreateEnclosureCommand enclosure2 = new CreateEnclosureCommand("Enclosure 2", 200, "Forest", farmer.getId());
         Enclosure enclosureEntity1 = enclosureRepository.save(new Enclosure(enclosure1, farmer));
@@ -208,9 +205,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void updateEnclosure() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         CreateEnclosureCommand enclosure1 = new CreateEnclosureCommand("Enclosure 1", 100, "Grassland", farmer.getId());
         Enclosure enclosureEntity1 = enclosureRepository.save(new Enclosure(enclosure1, farmer));
 
@@ -244,9 +238,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void updateEnclosureWithNonExistentId() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-
         UpdateEnclosureResource updatedEnclosure = new UpdateEnclosureResource("Updated Enclosure", 150, "Desert");
         // Act
         mockMvc.perform(put("/api/v1/enclosures/999") // Non-existent ID
@@ -261,9 +252,6 @@ class EnclosuresControllerIntegrationTest {
     @Test
     void deleteEnclosure() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         CreateEnclosureCommand enclosure1 = new CreateEnclosureCommand("Enclosure 1", 100, "Grassland", farmer.getId());
         Enclosure enclosureEntity1 = enclosureRepository.save(new Enclosure(enclosure1, farmer));
         // Act
@@ -289,10 +277,6 @@ class EnclosuresControllerIntegrationTest {
 
     @Test
     void deleteEnclosureWithNonExistentId() throws Exception {
-        // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-
         // Act
         mockMvc.perform(delete("/api/v1/enclosures/999") // Non-existent ID
                         .contentType("application/json")

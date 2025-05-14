@@ -17,6 +17,7 @@ import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.repositories.FarmerRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,13 +57,24 @@ class AnimalsControllerIntegrationTest {
     @Autowired
     private UserCommandService userCommandService;
 
+    private String token;
+    private Farmer farmer;
+
+    @BeforeEach
+    void setup() {
+        Optional<User> user = userCommandService.handle(new SignUpCommand("getuser@example.com", "password", List.of(Role.getDefaultRole())));
+        String token = userCommandService.handle(new SignInCommand("getuser@example.com", "password")).orElseThrow().getRight();
+        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
+
+        this.token = token;
+        this.farmer = farmer;
+    }
+
+
     @Test
     void postAnimal() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("testuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
-        Enclosure enclosure = enclosureRepository.save(new Enclosure(new CreateEnclosureCommand("Bella", 3, "Cow", farmer.getId()), farmer));
+        Enclosure enclosure = enclosureRepository.save(new Enclosure(new CreateEnclosureCommand("Paddock", 2, "Cow", farmer.getId()), farmer));
 
         CreateAnimalResource animal = new CreateAnimalResource(
                 "Bella", 3, "Cow", "Holstein", false, 450.0f, "HEALTHY", enclosure.getId()
@@ -104,9 +116,6 @@ class AnimalsControllerIntegrationTest {
     @Test
     void getAnimals() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("getuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("getuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         Enclosure enclosure = enclosureRepository.save(new Enclosure(new CreateEnclosureCommand("Paddock", 2, "Sheep", farmer.getId()), farmer));
 
         animalRepository.save(new Animal(new CreateAnimalCommand("Luna", 2, "Sheep", "Merino", true, 70.5f, "HEALTHY", enclosure.getId()), enclosure));
@@ -141,9 +150,6 @@ class AnimalsControllerIntegrationTest {
     @Test
     void deleteAnimal() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("deleteuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("deleteuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         Enclosure enclosure = enclosureRepository.save(new Enclosure(new CreateEnclosureCommand("Corral", 4, "Pig", farmer.getId()), farmer));
 
         var animal = animalRepository.save(new Animal(
@@ -170,9 +176,6 @@ class AnimalsControllerIntegrationTest {
     @Test
     void updateAnimal() throws Exception {
         // Arrange
-        Optional<User> user = userCommandService.handle(new SignUpCommand("updateuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("updateuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = farmerRepository.save(new Farmer(new CreateFarmerCommand(user.get().getId()), user.get()));
         Enclosure enclosure = enclosureRepository.save(new Enclosure(new CreateEnclosureCommand("Stable", 5, "Horse", farmer.getId()), farmer));
 
         var animal = animalRepository.save(new Animal(
