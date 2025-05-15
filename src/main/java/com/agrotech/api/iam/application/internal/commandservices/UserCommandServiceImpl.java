@@ -5,7 +5,7 @@ import com.agrotech.api.iam.application.internal.outboundservices.hashing.Hashin
 import com.agrotech.api.iam.application.internal.outboundservices.tokens.TokenService;
 import com.agrotech.api.iam.domain.exceptions.InvalidPasswordException;
 import com.agrotech.api.iam.domain.exceptions.InvalidRoleException;
-import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
+import com.agrotech.api.iam.domain.exceptions.UserNotFoundInSignInException;
 import com.agrotech.api.iam.domain.exceptions.UsernameAlreadyExistsException;
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.iam.domain.model.commands.SignInCommand;
@@ -46,7 +46,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
         var user = userRepository.findByUsername(command.username());
-        if (user.isEmpty()) throw new UserNotFoundException();
+        if (user.isEmpty()) throw new UserNotFoundInSignInException(command.username());
         if (!hashingService.matches(command.password(), user.get().getPassword())) throw new InvalidPasswordException();
         var token = tokenService.generateToken(user.get().getUsername());
         return Optional.of(ImmutablePair.of(user.get(), token));
