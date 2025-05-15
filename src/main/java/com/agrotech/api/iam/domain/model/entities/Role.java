@@ -46,7 +46,7 @@ public class Role {
     public static Role toRoleFromName(String name) {
         try {
             return new Role(Roles.valueOf(name));
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             throw new InvalidRoleException(name);
         }
     }
