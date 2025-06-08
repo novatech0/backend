@@ -5,10 +5,13 @@ import com.agrotech.api.appointment.domain.model.commands.CreateAppointmentComma
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.commands.UpdateAppointmentCommand;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AppointmentCommandService {
     Long handle(CreateAppointmentCommand command);
     Optional<Appointment> handle(UpdateAppointmentCommand command);
     void handle(DeleteAppointmentCommand command);
+    void updateAppointmentStatus(Appointment appointment);
+    void updateAppointmentsStatus(List<Appointment> appointments);
 }
