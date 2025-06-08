@@ -1,17 +1,16 @@
-package com.agrotech.api.shared.domain.model.aggregates;
+package com.agrotech.api.shared.infrastructure.persistence.jpa.base;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
-public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>> extends AbstractAggregateRoot<T> {
+public class AuditableEntity {
     @Id
     @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)

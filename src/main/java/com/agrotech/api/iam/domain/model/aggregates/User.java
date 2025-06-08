@@ -2,7 +2,7 @@ package com.agrotech.api.iam.domain.model.aggregates;
 
 import com.agrotech.api.iam.domain.model.entities.Role;
 import com.agrotech.api.profile.domain.model.entities.Notification;
-import com.agrotech.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,12 +19,12 @@ import java.util.Set;
  * User aggregate root
  * This class represents the aggregate root for the User entity.
  *
- * @see AuditableAbstractAggregateRoot
+ * @see AuditableEntity
  */
 @Getter
 @Setter
 @Entity
-public class User extends AuditableAbstractAggregateRoot<User> {
+public class User extends AuditableEntity {
 
     @NotBlank(message = "Username is required")
     @Email(message = "Username must be an email")

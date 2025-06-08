@@ -3,7 +3,7 @@ package com.agrotech.api.post.domain.model.aggregates;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
 import com.agrotech.api.post.domain.model.commands.CreatePostCommand;
 import com.agrotech.api.post.domain.model.commands.UpdatePostCommand;
-import com.agrotech.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -14,7 +14,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class Post extends AuditableAbstractAggregateRoot<Post> {
+public class Post extends AuditableEntity {
     @NotNull(message = "Title is required")
     @NotBlank(message = "Title cannot be blank")
     private String title;

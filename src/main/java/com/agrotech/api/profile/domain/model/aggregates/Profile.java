@@ -3,7 +3,7 @@ package com.agrotech.api.profile.domain.model.aggregates;
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.profile.domain.model.commands.CreateProfileCommand;
 import com.agrotech.api.profile.domain.model.commands.UpdateProfileCommand;
-import com.agrotech.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
-public class Profile extends AuditableAbstractAggregateRoot<Profile> {
+public class Profile extends AuditableEntity {
     @NotNull(message = "First Name is required")
     @NotBlank(message = "First Name cannot be blank")
     private String firstName;

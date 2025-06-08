@@ -4,7 +4,7 @@ import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
 import com.agrotech.api.management.domain.model.commands.UpdateEnclosureCommand;
 import com.agrotech.api.management.domain.model.entities.Animal;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
-import com.agrotech.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Getter
 @Entity
-public class Enclosure extends AuditableAbstractAggregateRoot<Enclosure> {
+public class Enclosure extends AuditableEntity {
     @NotNull(message = "Name is required")
     @NotBlank(message = "Name cannot be blank")
     private String name;
