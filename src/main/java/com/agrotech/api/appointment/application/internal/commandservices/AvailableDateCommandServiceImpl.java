@@ -35,8 +35,8 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
                     throw new SameAvailableDateException(command.scheduledDate(), command.startTime(), command.endTime());
                 });
         var availableDate = AvailableDate.create(command, advisor);
-        availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
-        return availableDate.getId();
+        var availableDateEntity = availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
+        return availableDateEntity.getId();
     }
 
     @Override
