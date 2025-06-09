@@ -11,10 +11,6 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
 public class AuditableEntity {
-    @Id
-    @Getter
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     @Getter
     @CreatedDate
     @Column(nullable = false, updatable = false)

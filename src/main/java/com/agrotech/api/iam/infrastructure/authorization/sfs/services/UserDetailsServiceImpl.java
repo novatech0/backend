@@ -1,6 +1,7 @@
 package com.agrotech.api.iam.infrastructure.authorization.sfs.services;
 
 import com.agrotech.api.iam.infrastructure.authorization.sfs.model.UserDetailsImpl;
+import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.UserMapper;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,6 +31,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-        return UserDetailsImpl.build(user);
+        return UserDetailsImpl.build(UserMapper.toDomain(user));
     }
 }
