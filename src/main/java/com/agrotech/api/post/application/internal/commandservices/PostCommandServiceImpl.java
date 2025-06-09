@@ -1,6 +1,5 @@
 package com.agrotech.api.post.application.internal.commandservices;
 
-import com.agrotech.api.appointment.infrastructure.persistence.jpa.mappers.AppointmentMapper;
 import com.agrotech.api.post.application.internal.outboundservices.acl.ExternalProfileService;
 import com.agrotech.api.post.infrastructure.persistence.jpa.entities.PostEntity;
 import com.agrotech.api.post.infrastructure.persistence.jpa.mappers.PostMapper;
