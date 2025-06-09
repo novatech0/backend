@@ -29,10 +29,12 @@ public class AppointmentEntity extends AuditableEntity {
 
     private String meetingUrl;
 
+    @Getter
     @ManyToOne
     @JoinColumn(name = "farmer_id")
     private FarmerEntity farmer;
 
+    @Getter
     @OneToOne
     @JoinColumn(name = "available_date_id")
     private AvailableDateEntity availableDate;
