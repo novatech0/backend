@@ -33,7 +33,7 @@ public class Animal {
         this.enclosure = enclosure;
     }
 
-    private Animal(String name, Integer age, String species, String breed, Boolean gender, Float weight, HealthStatus health, Enclosure enclosure) {
+    public Animal(String name, Integer age, String species, String breed, Boolean gender, Float weight, HealthStatus health, Enclosure enclosure) {
         this.name = name;
         this.age = age;
         this.species = species;
@@ -43,6 +43,7 @@ public class Animal {
         this.health = health;
         this.enclosure = enclosure;
     }
+
 
     public static Animal create(CreateAnimalCommand command, Enclosure enclosure) {
         if (!command.health().matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {

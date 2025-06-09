@@ -22,7 +22,6 @@ public class EnclosureMapper {
                 .id(domain.getId())
                 .name(domain.getName())
                 .capacity(domain.getCapacity())
-                .type(domain.getType())
                 .farmer(FarmerMapper.toEntity(domain.getFarmer()))
                 .build();
     }

@@ -21,12 +21,14 @@ public class UserEntity extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Setter
     @NotBlank
     @Email
     @Size(max = 50)
     @Column(unique = true)
     private String username;
 
+    @Setter
     @NotBlank
     @Size(max = 120)
     private String password;
@@ -37,4 +39,5 @@ public class UserEntity extends AuditableEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Builder.Default
     private Set<RoleEntity> roles = new HashSet<>();
+
 }

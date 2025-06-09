@@ -1,7 +1,6 @@
 package com.agrotech.api.profile.infrastructure.persistence.jpa.entities;
 
 import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.UserEntity;
-import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
