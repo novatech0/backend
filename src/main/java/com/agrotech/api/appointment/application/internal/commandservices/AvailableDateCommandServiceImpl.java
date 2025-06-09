@@ -8,6 +8,7 @@ import com.agrotech.api.appointment.domain.model.commands.UpdateAvailableDateCom
 import com.agrotech.api.appointment.domain.model.commands.UpdateAvailableDateStatusCommand;
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.services.AvailableDateCommandService;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.mappers.AvailableDateMapper;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.AvailableDateRepository;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import org.springframework.stereotype.Service;
@@ -39,19 +40,19 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
         validateTimeFormat(command.startTime(), command.endTime());
         validateTimeRange(command.startTime(), command.endTime());
         var availableDate = new AvailableDate(command, advisor.get());
-        availableDateRepository.save(availableDate);
+        availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
         return availableDate.getId();
     }
 
     @Override
     public Optional<AvailableDate> handle(UpdateAvailableDateCommand command) {
-        var availableDate = availableDateRepository.findById(command.id());
-        if(availableDate.isEmpty()) return Optional.empty();
+        var availableDateEntity = availableDateRepository.findById(command.id());
+        if(availableDateEntity.isEmpty()) return Optional.empty();
         validateTimeFormat(command.startTime(), command.endTime());
         validateTimeRange(command.startTime(), command.endTime());
-        var availableDateToUpdate = availableDate.get();
-        availableDateRepository.save(availableDateToUpdate.update(command));
-        return Optional.of(availableDateToUpdate);
+        var availableDate = AvailableDateMapper.toDomain(availableDateEntity.get()).update(command);
+        var updatedEntity = availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
+        return Optional.of(AvailableDateMapper.toDomain(updatedEntity));
     }
 
     @Override
@@ -63,10 +64,11 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
 
     @Override
     public void handle(UpdateAvailableDateStatusCommand command) {
-        var availableDate = availableDateRepository.findById(command.id());
-        if(availableDate.isEmpty()) throw new AvailableDateNotFoundException(command.id());
-        var availableDateToUpdate = availableDate.get();
-        availableDateRepository.save(availableDateToUpdate.updateStatus(command.status()));
+        var availableDateEntity = availableDateRepository.findById(command.id());
+        if(availableDateEntity.isEmpty()) throw new AvailableDateNotFoundException(command.id());
+        var availableDate = AvailableDateMapper.toDomain(availableDateEntity.get());
+        var updatedEntity = availableDate.updateStatus(command.status());
+        availableDateRepository.save(AvailableDateMapper.toEntity(updatedEntity));
     }
 
     private void validateTimeFormat(String startTime, String endTime) {

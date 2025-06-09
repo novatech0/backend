@@ -7,6 +7,8 @@ import com.agrotech.api.appointment.domain.model.commands.DeleteReviewCommand;
 import com.agrotech.api.appointment.domain.model.commands.UpdateReviewCommand;
 import com.agrotech.api.appointment.domain.model.entities.Review;
 import com.agrotech.api.appointment.domain.services.ReviewCommandService;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.entities.ReviewEntity;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.mappers.ReviewMapper;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.ReviewRepository;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
@@ -36,19 +38,20 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
         Review review = new Review(command, advisor.get(), farmer.get());
-        Review savedReview = reviewRepository.save(review);        updateAdvisorRating(command.advisorId());
-        return savedReview.getId();
+        reviewRepository.save(ReviewMapper.toEntity(review));
+        updateAdvisorRating(command.advisorId());
+        return review.getId();
     }
 
     @Override
     public Optional<Review> handle(UpdateReviewCommand command) {
-        var review = reviewRepository.findById(command.id());
-        if (review.isEmpty()) return Optional.empty();
+        var reviewEntity = reviewRepository.findById(command.id());
+        if (reviewEntity.isEmpty()) return Optional.empty();
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
-        var reviewToUpdate = review.get();
-        reviewRepository.save(reviewToUpdate.update(command));
-        updateAdvisorRating(review.get().getAdvisorId());
-        return Optional.of(reviewToUpdate);
+        var review = ReviewMapper.toDomain(reviewEntity.get()).update(command);
+        var updatedEntity = reviewRepository.save(ReviewMapper.toEntity(review));
+        updateAdvisorRating(review.getAdvisor().getId());
+        return Optional.of(ReviewMapper.toDomain(updatedEntity));
     }
 
     @Override
@@ -64,7 +67,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
 
         BigDecimal totalRating = BigDecimal.ZERO;
 
-        for (Review review : reviews) {
+        for (ReviewEntity review : reviews) {
             totalRating = totalRating.add(BigDecimal.valueOf(review.getRating()));
         }
 
