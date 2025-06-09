@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.agrotech.api.post.application.internal.outboundservices.acl.ExternalProfileService;
-import com.agrotech.api.post.domain.model.aggregates.Post;
 import com.agrotech.api.post.domain.model.commands.CreatePostCommand;
+import com.agrotech.api.post.infrastructure.persistence.jpa.entities.PostEntity;
 import com.agrotech.api.post.infrastructure.persistence.jpa.repositories.PostRepository;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,14 +21,18 @@ class PostCommandServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
+
     @Mock
     private ExternalProfileService externalProfileService;
+
     @InjectMocks
     private PostCommandServiceImpl postCommandService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     // Creating a post with valid advisor ID returns the post ID
     @Test
     public void test_handle_create_post_command_with_valid_advisor_returns_post_id() {
@@ -39,29 +43,30 @@ class PostCommandServiceImplTest {
         String description = "Test Description";
         String image = "test-image.jpg";
 
+        // Mock Advisor
         Advisor advisor = mock(Advisor.class);
         when(advisor.getId()).thenReturn(advisorId);
-        CreatePostCommand command = new CreatePostCommand(advisor.getId(), title, description, image);
 
+        // Command with advisorId and post details
+        CreatePostCommand command = new CreatePostCommand(advisorId, title, description, image);
 
+        // Mock PostEntity returned by repository after save, with ID set
+        PostEntity mockPostEntity = mock(PostEntity.class);
+        when(mockPostEntity.getId()).thenReturn(expectedPostId);
 
-        Post post = mock(Post.class);
-        when(post.getId()).thenReturn(expectedPostId);
-        when(post.getAdvisorId()).thenReturn(advisorId);
-
+        // External service returns advisor correctly
         when(externalProfileService.fetchAdvisorById(advisorId)).thenReturn(Optional.of(advisor));
 
-
-        // Mock the save method to set ID and return the post
-
-        when(postRepository.save(any(Post.class))).thenReturn(post);
+        // Repository saves PostEntity and returns the saved entity with ID
+        when(postRepository.save(any(PostEntity.class))).thenReturn(mockPostEntity);
 
         // Act
         Long actualPostId = postCommandService.handle(command);
 
         // Assert
         assertEquals(expectedPostId, actualPostId);
-        verify(externalProfileService).fetchAdvisorById(advisor.getId());
-        verify(postRepository).save(any(Post.class));
+
+        verify(externalProfileService).fetchAdvisorById(advisorId);
+        verify(postRepository).save(any(PostEntity.class));
     }
 }
