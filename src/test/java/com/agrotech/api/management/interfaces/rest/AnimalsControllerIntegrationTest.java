@@ -10,8 +10,8 @@ import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateAnimalCommand;
 import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
 import com.agrotech.api.management.domain.model.entities.Animal;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.AnimalRepository;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.AnimalRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import com.agrotech.api.management.interfaces.rest.resources.CreateAnimalResource;
 import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
@@ -23,7 +23,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 

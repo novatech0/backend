@@ -8,8 +8,10 @@ import com.agrotech.api.management.domain.model.commands.DeleteAnimalCommand;
 import com.agrotech.api.management.domain.model.commands.UpdateAnimalCommand;
 import com.agrotech.api.management.domain.model.entities.Animal;
 import com.agrotech.api.management.domain.services.AnimalCommandService;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.AnimalRepository;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.AnimalMapper;
+import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.EnclosureMapper;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.AnimalRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -28,23 +30,21 @@ public class AnimalCommandServiceImpl implements AnimalCommandService {
     public Long handle(CreateAnimalCommand command) {
         var enclosure = enclosureRepository.findById(command.enclosureId());
         if (enclosure.isEmpty()) throw new EnclosureNotFoundException(command.enclosureId());
-
-        Animal animal = new Animal(command, enclosure.get());
-        Animal animalsave = animalRepository.save(animal);
-        return animalsave.getId();
+        var animal = new Animal(command, EnclosureMapper.toDomain(enclosure.get()));
+        animalRepository.save(AnimalMapper.toEntity(animal));
+        return animal.getId();
     }
 
     @Override
     public Optional<Animal> handle(UpdateAnimalCommand command) {
-        var animal = animalRepository.findById(command.animalId());
-        if (animal.isEmpty()) return Optional.empty();
+        var animalEntity = animalRepository.findById(command.animalId());
+        if (animalEntity.isEmpty()) return Optional.empty();
         if (command.health() != null  &&  !command.health().matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {
             throw new IncorrectHealthStatusException(command.health());
         }
-
-        var animalToUpdate = animal.get();
-        Animal updatedAnimal = animalRepository.save(animalToUpdate.update(command));
-        return Optional.of(updatedAnimal);
+        var animal = AnimalMapper.toDomain(animalEntity.get());
+        animalRepository.save(AnimalMapper.toEntity(animal.update(command)));
+        return Optional.of(animal);
     }
 
     @Override

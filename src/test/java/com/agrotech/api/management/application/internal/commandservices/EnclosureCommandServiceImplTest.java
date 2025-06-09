@@ -1,7 +1,7 @@
 package com.agrotech.api.management.application.internal.commandservices;
 import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.repositories.FarmerRepository;
 import org.junit.jupiter.api.BeforeEach;
