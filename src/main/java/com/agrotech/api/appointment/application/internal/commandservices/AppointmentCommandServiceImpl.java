@@ -5,25 +5,19 @@ import com.agrotech.api.appointment.domain.exceptions.*;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCancelled;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
 import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByIdQuery;
-import com.agrotech.api.appointment.domain.model.valueobjects.AvailableDateStatus;
 import com.agrotech.api.appointment.domain.services.AvailableDateQueryService;
-import com.agrotech.api.appointment.infrastructure.persistence.jpa.entities.AppointmentEntity;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.mappers.AppointmentMapper;
 import com.agrotech.api.shared.domain.exceptions.*;
 import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.CreateAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.commands.UpdateAppointmentCommand;
-import com.agrotech.api.appointment.domain.model.valueobjects.AppointmentStatus;
 import com.agrotech.api.appointment.domain.services.AppointmentCommandService;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.AppointmentRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -46,17 +40,11 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
     @Override
     @Transactional
     public Long handle(CreateAppointmentCommand command) {
-        var availableDate = availableDateQueryService.handle(new GetAvailableDateByIdQuery(command.availableDateId()));
-        if (availableDate.isEmpty()) throw new AvailableDateNotFoundException(command.availableDateId());
-        if (availableDate.get().getStatus() == AvailableDateStatus.UNAVAILABLE) {
-            throw new InvalidAvailableDateException(command.availableDateId());
-        }
-        var advisor = externalProfilesService.fetchAdvisorById(availableDate.get().getAdvisorId());
-        if (advisor.isEmpty()) throw new AdvisorNotFoundException(availableDate.get().getAdvisorId());
-        var farmer = externalProfilesService.fetchFarmerById(command.farmerId());
-        if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
-        var meetingUrl = "https://meet.jit.si/agrotechMeeting" + command.farmerId() + "-" + advisor.get().getId();
-        var appointment = new Appointment(command, meetingUrl, farmer.get(), availableDate.get());
+        var availableDate = availableDateQueryService.handle(new GetAvailableDateByIdQuery(command.availableDateId()))
+                .orElseThrow(() -> new AvailableDateNotFoundException(command.availableDateId()));
+        var farmer = externalProfilesService.fetchFarmerById(command.farmerId())
+                .orElseThrow(() -> new FarmerNotFoundException(command.farmerId()));
+        var appointment = Appointment.create(command, farmer, availableDate);
         var appointmentEntity = appointmentRepository.save(AppointmentMapper.toEntity(appointment));
         eventPublisher.publishEvent(new CreateNotificationByAppointmentCreated(this, command.farmerId(), command.availableDateId()));
         return appointmentEntity.getId();
@@ -66,10 +54,7 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
     public Optional<Appointment> handle(UpdateAppointmentCommand command) {
         var appointmentEntity = appointmentRepository.findById(command.id())
                 .orElseThrow(() -> new AppointmentNotFoundException(command.id()));
-        // Verification of Status
-        if (command.status() != null && !command.status().matches("^(?i)(PENDING|ONGOING|COMPLETED)$")) {
-            throw new InvalidStatusException(command.status());
-        }
+        if (command.status() != null) Appointment.validateStatus(command.status());
         appointmentEntity.update(command);
         appointmentRepository.save(appointmentEntity);
         return Optional.of(AppointmentMapper.toDomain(appointmentEntity));
@@ -84,38 +69,5 @@ public class AppointmentCommandServiceImpl implements AppointmentCommandService 
                 .orElseThrow(() -> new AvailableDateNotFoundException(appointmentEntity.getAvailableDate().getId()));
         eventPublisher.publishEvent(new CreateNotificationByAppointmentCancelled(this, availableDate.getId()));
         appointmentRepository.delete(appointmentEntity);
-    }
-
-    public void updateAppointmentsStatus(List<Appointment> appointments) {
-        for (Appointment appointment : appointments) {
-            updateAppointmentStatus(appointment);
-        }
-    }
-
-    public void updateAppointmentStatus(Appointment appointment) {
-        var availableDate = availableDateQueryService.handle(new GetAvailableDateByIdQuery(appointment.getAvailableDateId()));
-        if (availableDate.isEmpty()) throw new AvailableDateNotFoundException(appointment.getAvailableDateId());
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = LocalDateTime.of(availableDate.get().getScheduledDate(), LocalTime.parse(availableDate.get().getStartTime()));
-        LocalDateTime end = LocalDateTime.of(availableDate.get().getScheduledDate(), LocalTime.parse(availableDate.get().getEndTime()));
-
-        // Determine the new status
-        AppointmentStatus newStatus;
-        if (now.isAfter(end)) {
-            newStatus = AppointmentStatus.COMPLETED;
-        } else if (now.isAfter(start)) {
-            newStatus = AppointmentStatus.ONGOING;
-        } else {
-            newStatus = appointment.getStatus();
-        }
-
-        // Update the status if it has changed
-        if (!appointment.getStatus().equals(newStatus)) {
-            var appointmentEntity = appointmentRepository.findById(appointment.getId());
-            if (appointmentEntity.isEmpty()) return;
-            appointmentEntity.get().setStatus(newStatus);
-            appointmentRepository.save(appointmentEntity.get());
-        }
     }
 }

@@ -37,7 +37,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
         reviewRepository.findByAdvisor_IdAndFarmer_Id(command.advisorId(), command.farmerId())
                 .ifPresent(existingReview -> { throw new ReviewAlreadyExistsException(command.advisorId(), command.farmerId()); });
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
-        var review = new Review(command, advisor, farmer);
+        var review = Review.create(command, advisor, farmer);
         var reviewEntity = reviewRepository.save(ReviewMapper.toEntity(review));
         updateAdvisorRating(command.advisorId());
         return reviewEntity.getId();
@@ -47,7 +47,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
     public Optional<Review> handle(UpdateReviewCommand command) {
         var reviewEntity = reviewRepository.findById(command.id())
                 .orElseThrow(() -> new ReviewNotFoundException(command.id()));
-        if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
+        Review.validateRating(command.rating());
         reviewEntity.update(command);
         reviewRepository.save(reviewEntity);
         updateAdvisorRating(reviewEntity.getAdvisor().getId());

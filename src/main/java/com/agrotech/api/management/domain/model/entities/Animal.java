@@ -1,5 +1,6 @@
 package com.agrotech.api.management.domain.model.entities;
 
+import com.agrotech.api.management.domain.exceptions.IncorrectHealthStatusException;
 import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateAnimalCommand;
 import com.agrotech.api.management.domain.model.commands.UpdateAnimalCommand;
@@ -32,15 +33,38 @@ public class Animal {
         this.enclosure = enclosure;
     }
 
-    public Animal(CreateAnimalCommand command, Enclosure enclosure) {
-        this.name = command.name();
-        this.age = command.age();
-        this.species = command.species();
-        this.breed = command.breed();
-        this.gender = command.gender();
-        this.weight = command.weight();
-        this.health = HealthStatus.valueOf(command.health().toUpperCase());
+    private Animal(String name, Integer age, String species, String breed, Boolean gender, Float weight, HealthStatus health, Enclosure enclosure) {
+        this.name = name;
+        this.age = age;
+        this.species = species;
+        this.breed = breed;
+        this.gender = gender;
+        this.weight = weight;
+        this.health = health;
         this.enclosure = enclosure;
+    }
+
+    public static Animal create(CreateAnimalCommand command, Enclosure enclosure) {
+        if (!command.health().matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {
+            throw new IncorrectHealthStatusException(command.health());
+        }
+
+        return new Animal(
+                command.name(),
+                command.age(),
+                command.species(),
+                command.breed(),
+                command.gender(),
+                command.weight(),
+                HealthStatus.valueOf(command.health().toUpperCase()),
+                enclosure
+        );
+    }
+
+    public static void validateHealthStatus(String healthStatus) {
+        if (!healthStatus.matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {
+            throw new IncorrectHealthStatusException(healthStatus);
+        }
     }
 
     public Long getEnclosureId() {

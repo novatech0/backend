@@ -30,7 +30,7 @@ public class AnimalCommandServiceImpl implements AnimalCommandService {
     public Long handle(CreateAnimalCommand command) {
         var enclosure = enclosureRepository.findById(command.enclosureId())
                 .orElseThrow(() -> new EnclosureNotFoundException(command.enclosureId()));
-        var animal = new Animal(command, EnclosureMapper.toDomain(enclosure));
+        var animal = Animal.create(command, EnclosureMapper.toDomain(enclosure));
         var animalEntity = animalRepository.save(AnimalMapper.toEntity(animal));
         return animalEntity.getId();
     }
@@ -39,9 +39,7 @@ public class AnimalCommandServiceImpl implements AnimalCommandService {
     public Optional<Animal> handle(UpdateAnimalCommand command) {
         var animalEntity = animalRepository.findById(command.animalId())
                 .orElseThrow(() -> new AnimalNotFoundException(command.animalId()));
-        if (command.health() != null  &&  !command.health().matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {
-            throw new IncorrectHealthStatusException(command.health());
-        }
+        if (command.health() != null) Animal.validateHealthStatus(command.health());
         animalEntity.update(command);
         animalRepository.save(animalEntity);
         return Optional.of(AnimalMapper.toDomain(animalEntity));

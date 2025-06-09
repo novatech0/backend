@@ -1,5 +1,6 @@
 package com.agrotech.api.appointment.domain.model.entities;
 
+import com.agrotech.api.appointment.domain.exceptions.InvalidRatingException;
 import com.agrotech.api.appointment.domain.model.commands.CreateReviewCommand;
 import com.agrotech.api.appointment.domain.model.commands.UpdateReviewCommand;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
@@ -14,12 +15,11 @@ public class Review {
     private String comment;
     private Integer rating;
 
-    public Review() {
-    }
+    public Review() {}
 
-    public Review(CreateReviewCommand command, Advisor advisor, Farmer farmer) {
-        this.comment = command.comment();
-        this.rating = command.rating();
+    private Review(String comment, Integer rating, Advisor advisor, Farmer farmer) {
+        this.comment = comment;
+        this.rating = rating;
         this.advisor = advisor;
         this.farmer = farmer;
     }
@@ -30,6 +30,17 @@ public class Review {
         this.rating = rating;
         this.advisor = advisor;
         this.farmer = farmer;
+    }
+
+    public static Review create(CreateReviewCommand command, Advisor advisor, Farmer farmer) {
+        validateRating(command.rating());
+        return new Review(command.comment(), command.rating(), advisor, farmer);
+    }
+
+    public static void validateRating(Integer rating) {
+        if (rating < 0 || rating > 5) {
+            throw new InvalidRatingException(rating);
+        }
     }
 
     public Long getAdvisorId() {

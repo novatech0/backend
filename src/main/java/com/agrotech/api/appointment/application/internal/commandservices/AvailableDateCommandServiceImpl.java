@@ -13,7 +13,6 @@ import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -30,15 +29,12 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
     public Long handle(CreateAvailableDateCommand command) {
         var advisor = externalProfilesService.fetchAdvisorById(command.advisorId())
                 .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
-        availableDateRepository.findByAdvisor_IdAndScheduledDateAndStartTimeAndEndTime(command.advisorId(), command.scheduledDate(), command.startTime(), command.endTime())
-                .ifPresent(availableDate -> { throw new SameAvailableDateException(command.scheduledDate(), command.startTime(), command.endTime());});
-        // Verification of the date
-        if (command.scheduledDate().isBefore(LocalDateTime.now().toLocalDate())) {
-            throw new InvalidDateException(command.scheduledDate());
-        }
-        validateTimeFormat(command.startTime(), command.endTime());
-        validateTimeRange(command.startTime(), command.endTime());
-        var availableDate = new AvailableDate(command, advisor);
+        availableDateRepository.findByAdvisor_IdAndScheduledDateAndStartTimeAndEndTime(
+                        command.advisorId(), command.scheduledDate(), command.startTime(), command.endTime())
+                .ifPresent(existing -> {
+                    throw new SameAvailableDateException(command.scheduledDate(), command.startTime(), command.endTime());
+                });
+        var availableDate = AvailableDate.create(command, advisor);
         availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
         return availableDate.getId();
     }
@@ -47,8 +43,8 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
     public Optional<AvailableDate> handle(UpdateAvailableDateCommand command) {
         var availableDateEntity = availableDateRepository.findById(command.id())
                 .orElseThrow(() -> new AvailableDateNotFoundException(command.id()));
-        validateTimeFormat(command.startTime(), command.endTime());
-        validateTimeRange(command.startTime(), command.endTime());
+        AvailableDate.validateTimeFormat(command.startTime(), command.endTime());
+        AvailableDate.validateTimeRange(command.startTime(), command.endTime());
         availableDateEntity.update(command);
         availableDateRepository.save(availableDateEntity);
         return Optional.of(AvailableDateMapper.toDomain(availableDateEntity));
@@ -67,17 +63,5 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
                 .orElseThrow(() -> new AvailableDateNotFoundException(command.id()));
         availableDateEntity.updateStatus(command.status());
         availableDateRepository.save(availableDateEntity);
-    }
-
-    private void validateTimeFormat(String startTime, String endTime) {
-        if (!startTime.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$") || !endTime.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
-            throw new IncorrectTimeFormatException(startTime, endTime);
-        }
-    }
-
-    private void validateTimeRange(String startTime, String endTime) {
-        if (startTime.compareTo(endTime) >= 0) {
-            throw new InvalidTimeRangeException(startTime, endTime);
-        }
     }
 }
