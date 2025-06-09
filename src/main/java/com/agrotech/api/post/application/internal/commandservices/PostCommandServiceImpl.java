@@ -29,27 +29,24 @@ public class PostCommandServiceImpl implements PostCommandService {
     public Long handle(CreatePostCommand command) {
         var advisor = externalProfileService.fetchAdvisorById(command.advisorId());
         if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
-
-        var postEntity = PostMapper.toEntity(command, advisor.get());
-        postRepository.save(postEntity);
-        return postEntity.getId();
+        Post post = new Post(command, advisor.get());
+        postRepository.save(PostMapper.toEntity(post));
+        return post.getId();
     }
 
     @Override
     public Optional<Post> handle(UpdatePostCommand command) {
         var post = postRepository.findById(command.id());
-        if (post.isEmpty()) throw new PostNotFoundException(command.id());
-
-        var postToUpdate = post.get().update(command);
-        PostEntity updatedPost = postRepository.save(postToUpdate);
-        return Optional.of(PostMapper.toDomain(updatedPost));
+        if (post.isEmpty()) return Optional.empty();
+        var postToUpdate = PostMapper.toDomain(post.get()).update(command);
+        var updatedEntity = postRepository.save(PostMapper.toEntity(postToUpdate));
+        return Optional.of(PostMapper.toDomain(updatedEntity));
     }
 
     @Override
     public void handle(DeletePostCommand command) {
         var post = postRepository.findById(command.id());
         if (post.isEmpty()) throw new PostNotFoundException(command.id());
-
         postRepository.delete(post.get());
     }
 
