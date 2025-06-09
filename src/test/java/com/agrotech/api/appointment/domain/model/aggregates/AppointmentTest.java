@@ -17,7 +17,6 @@ class AppointmentTest {
         Long availableDateId = 1L;
         Long farmerId = 2L;
         String message = "I would like to schedule an appointment";
-        String meetingUrl = "https://meet.example.com/123";
 
         CreateAppointmentCommand command = new CreateAppointmentCommand(availableDateId, farmerId, message);
 
@@ -28,14 +27,14 @@ class AppointmentTest {
         when(availableDate.getId()).thenReturn(availableDateId);
 
         // Act
-        Appointment appointment = new Appointment(command, meetingUrl, farmer, availableDate);
+        Appointment appointment = new Appointment().create(command, farmer, availableDate);
 
         // Assert
         assertEquals(message, appointment.getMessage());
         assertEquals(AppointmentStatus.PENDING, appointment.getStatus());
         assertEquals(farmer, appointment.getFarmer());
         assertEquals(availableDate, appointment.getAvailableDate());
-        assertEquals(meetingUrl, appointment.getMeetingUrl());
+        assertNotNull(appointment.getMeetingUrl());
         assertEquals(farmerId, appointment.getFarmerId());
         assertEquals(availableDateId, appointment.getAvailableDateId());
         assertEquals("PENDING", appointment.getAppointmentStatus());

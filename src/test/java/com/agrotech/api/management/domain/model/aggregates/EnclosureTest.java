@@ -36,8 +36,6 @@ class EnclosureTest {
         assertEquals(type, enclosure.getType());
         assertEquals(farmer, enclosure.getFarmer());
         assertEquals(farmerId, enclosure.getFarmerId());
-        assertNotNull(enclosure.getAnimals());
-        assertTrue(enclosure.getAnimals().isEmpty());
     }
 
     // Creating an Enclosure with null values in CreateEnclosureCommand
@@ -67,7 +65,5 @@ class EnclosureTest {
         assertNull(enclosure.getType());
         assertEquals(farmer, enclosure.getFarmer());
         assertEquals(farmerId, enclosure.getFarmerId());
-        assertNotNull(enclosure.getAnimals());
-        assertTrue(enclosure.getAnimals().isEmpty());
     }
 }

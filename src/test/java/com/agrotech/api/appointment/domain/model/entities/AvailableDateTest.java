@@ -18,8 +18,8 @@ class AvailableDateTest {
     public void test_create_available_date_with_valid_command() {
         // Arrange
         LocalDate scheduledDate = LocalDate.now().plusDays(1);
-        String startTime = "09:00:00";
-        String endTime = "17:00:00";
+        String startTime = "09:00";
+        String endTime = "17:00";
         Long advisorId = 1L;
 
         CreateAvailableDateCommand command = new CreateAvailableDateCommand(
@@ -31,7 +31,7 @@ class AvailableDateTest {
         Advisor advisor = new Advisor(user);
 
         // Act
-        AvailableDate availableDate = new AvailableDate(command, advisor);
+        AvailableDate availableDate = new AvailableDate().create(command, advisor);
 
         // Assert
         assertNotNull(availableDate);
