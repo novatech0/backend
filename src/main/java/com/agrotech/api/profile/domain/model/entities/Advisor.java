@@ -2,34 +2,29 @@ package com.agrotech.api.profile.domain.model.entities;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.profile.domain.model.commands.UpdateAdvisorCommand;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Entity
 @Getter
 public class Advisor {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter
     private Long id;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
     private User user;
-
-    @NotNull(message = "Rating is required")
-    @Column(precision = 3, scale = 2)
-    BigDecimal rating;
+    private BigDecimal rating;
 
     public Advisor() {
-        this.rating = BigDecimal.valueOf(0.00);
     }
 
     public Advisor(User user) {
-        this.rating = BigDecimal.valueOf(0.00);
         this.user = user;
+        this.rating = BigDecimal.valueOf(0.00);
+    }
+
+    public Advisor(User user, BigDecimal rating) {
+        this.user = user;
+        this.rating = rating;
     }
 
     public Advisor update(UpdateAdvisorCommand command) {

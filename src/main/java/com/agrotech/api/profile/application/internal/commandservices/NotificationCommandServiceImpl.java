@@ -2,6 +2,7 @@ package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.profile.application.internal.outboundservices.acl.ExternalUserService;
 import com.agrotech.api.profile.domain.exceptions.NotificationNotFoundException;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.NotificationMapper;
 import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.commands.CreateNotificationCommand;
 import com.agrotech.api.profile.domain.model.commands.DeleteNotificationCommand;
@@ -27,7 +28,7 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
             throw new UserNotFoundException(command.userId());
         }
         var notification = new Notification(command, user.get());
-        notificationRepository.save(notification);
+        notificationRepository.save(NotificationMapper.toEntity(notification));
         return notification.getId();
     }
 

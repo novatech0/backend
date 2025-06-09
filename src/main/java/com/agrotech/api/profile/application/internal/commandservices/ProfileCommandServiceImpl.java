@@ -3,6 +3,7 @@ package com.agrotech.api.profile.application.internal.commandservices;
 import com.agrotech.api.profile.application.internal.outboundservices.acl.ExternalUserService;
 import com.agrotech.api.profile.domain.exceptions.ProfileNotFoundException;
 import com.agrotech.api.profile.domain.exceptions.UserAlreadyUsedException;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.ProfileMapper;
 import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.aggregates.Profile;
 import com.agrotech.api.profile.domain.model.commands.CreateProfileCommand;
@@ -35,17 +36,17 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
             throw new UserAlreadyUsedException(command.userId());
         }
         Profile profile = new Profile(command, user.get());
-        profileRepository.save(profile);
+        profileRepository.save(ProfileMapper.toEntity(profile));
         return profile.getId();
     }
 
     @Override
     public Optional<Profile> handle(UpdateProfileCommand command) {
-        var profile = profileRepository.findById(command.id());
-        if (profile.isEmpty()) return Optional.empty();
-        var profileToUpdate = profile.get();
-        Profile updatedProfile = profileRepository.save(profileToUpdate.update(command));
-        return Optional.of(updatedProfile);
+        var profileEntity = profileRepository.findById(command.id());
+        if (profileEntity.isEmpty()) return Optional.empty();
+        var profile = ProfileMapper.toDomain(profileEntity.get()).update(command);
+        var updatedEntity = profileRepository.save(ProfileMapper.toEntity(profile));
+        return Optional.of(ProfileMapper.toDomain(updatedEntity));
     }
 
     @Override

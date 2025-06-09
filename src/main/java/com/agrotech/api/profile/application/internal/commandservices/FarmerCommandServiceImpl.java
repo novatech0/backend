@@ -1,6 +1,7 @@
 package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.FarmerMapper;
 import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
 import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
@@ -24,8 +25,8 @@ public class FarmerCommandServiceImpl implements FarmerCommandService {
         if (sameUser.isPresent()) {
             throw new UserNotFoundException(command.userId());
         }
-        var farmer = new Farmer(command, user);
-        farmerRepository.save(farmer);
+        var farmer = new Farmer(user);
+        farmerRepository.save(FarmerMapper.toEntity(farmer));
         return farmer.getId();
     }
 

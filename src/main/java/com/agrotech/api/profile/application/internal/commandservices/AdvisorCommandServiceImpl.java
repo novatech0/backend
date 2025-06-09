@@ -1,6 +1,7 @@
 package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.AdvisorMapper;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.profile.domain.exceptions.UserAlreadyUsedException;
 import com.agrotech.api.profile.domain.model.commands.CreateAdvisorCommand;
@@ -28,19 +29,19 @@ public class AdvisorCommandServiceImpl implements AdvisorCommandService {
             throw new UserAlreadyUsedException(command.userId());
         }
         Advisor advisor = new Advisor(user);
-        advisorRepository.save(advisor);
+        advisorRepository.save(AdvisorMapper.toEntity(advisor));
         return advisor.getId();
     }
 
     @Override
     public Optional<Advisor> handle(UpdateAdvisorCommand command) {
-        var advisor = advisorRepository.findById(command.id());
-        if (advisor.isEmpty()) {
+        var advisorEntity = advisorRepository.findById(command.id());
+        if (advisorEntity.isEmpty()) {
             return Optional.empty();
         }
-        var advisorToUpdate = advisor.get();
-        Advisor updatedAdvisor = advisorRepository.save(advisorToUpdate.update(command));
-        return Optional.of(updatedAdvisor);
+        var advisor = AdvisorMapper.toDomain(advisorEntity.get()).update(command);
+        var updatedEntity = advisorRepository.save(AdvisorMapper.toEntity(advisor));
+        return Optional.of(AdvisorMapper.toDomain(updatedEntity));
     }
 
     @Override

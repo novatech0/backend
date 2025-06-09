@@ -1,25 +1,19 @@
 package com.agrotech.api.profile.domain.model.entities;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
-import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
-import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
-@Entity
 @Getter
 public class Farmer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter
     private Long id;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
     private User user;
 
     public Farmer() {
     }
 
-    public Farmer(CreateFarmerCommand command, User user) {
+    public Farmer(User user) {
         this.user = user;
     }
 

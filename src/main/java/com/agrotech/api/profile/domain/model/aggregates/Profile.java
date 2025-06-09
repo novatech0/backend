@@ -1,6 +1,8 @@
 package com.agrotech.api.profile.domain.model.aggregates;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
+import com.agrotech.api.profile.domain.model.commands.CreateProfileCommand;
+import com.agrotech.api.profile.domain.model.commands.UpdateProfileCommand;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -22,6 +24,19 @@ public class Profile {
     public Profile() {
     }
 
+    public Profile(CreateProfileCommand command, User user) {
+        this.firstName = command.firstName();
+        this.lastName = command.lastName();
+        this.city = command.city();
+        this.country = command.country();
+        this.birthDate = command.birthDate();
+        this.description = command.description();
+        this.photo = command.photo();
+        this.occupation = command.occupation();
+        this.experience = command.experience();
+        this.user = user;
+    }
+
     public Profile(Long id, String firstName, String lastName, String city, String country,
                    LocalDate birthDate, String description, String photo, String occupation,
                    Integer experience, User user) {
@@ -36,6 +51,19 @@ public class Profile {
         this.occupation = occupation;
         this.experience = experience;
         this.user = user;
+    }
+
+    public Profile update(UpdateProfileCommand command) {
+        this.firstName = command.firstName();
+        this.lastName = command.lastName();
+        this.city = command.city();
+        this.country = command.country();
+        this.birthDate = command.birthDate();
+        this.description = command.description();
+        this.photo = command.photo();
+        this.occupation = command.occupation();
+        this.experience = command.experience();
+        return this;
     }
 
     public Long getUserId() {

@@ -5,7 +5,6 @@ import com.agrotech.api.profile.domain.model.aggregates.Profile;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.ProfileEntity;
 
 public class ProfileMapper {
-
     public static Profile toDomain(ProfileEntity entity) {
         if (entity == null) return null;
         return new Profile(
@@ -26,6 +25,7 @@ public class ProfileMapper {
     public static ProfileEntity toEntity(Profile domain) {
         if (domain == null) return null;
         return ProfileEntity.builder()
+                .id(domain.getId())
                 .firstName(domain.getFirstName())
                 .lastName(domain.getLastName())
                 .city(domain.getCity())
