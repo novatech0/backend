@@ -22,9 +22,10 @@ public class US01Steps {
     public void se_encuentra_en_la_plataforma() {
         System.out.println("El granjero está en la plataforma.");
         baseURI = "http://localhost:8080/api/v1";
+
         // Simulate user login
-        String username = "example@gmail.com";
-        String password = "12345678";
+        String username = "admin@gmail.com";
+        String password = "123456";
 
         String jsonBody = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         response = given()
@@ -33,8 +34,15 @@ public class US01Steps {
                 .when()
                 .post("/authentication/sign-in");
 
+        // Debugging: Print the response body
+        System.out.println("Login Response Body: " + response.getBody().asString());
+
+        // Extract token and validate
         token = response.getBody().jsonPath().get("token");
+        assertNotNull(token, "Token is null. Login failed.");
+        System.out.println("Generated Token: " + token);
     }
+
 
     @When("seleccione el botón relacionado con el {string}")
     public void seleccione_el_botón_relacionado_con_el(String catalogo) {
@@ -50,8 +58,12 @@ public class US01Steps {
                 .when()
                 .get("/profiles/advisors");
 
-        assertNotNull(response.getBody().jsonPath().getList("data"));
-        System.out.println("Lista de asesores: " + response.getBody().jsonPath().getList(""));
+        // Debugging: Print the response body
+        System.out.println("Response Body: " + response.getBody().asString());
+
+        // Verify the response contains the expected data
+        assertNotNull(response.getBody().jsonPath().getList("data"), "The 'data' field in the response is null.");
+        System.out.println("Lista de asesores: " + response.getBody().jsonPath().getList("data"));
     }
 
     @Given("el granjero con poca experiencia quiere personalizar su búsqueda")
