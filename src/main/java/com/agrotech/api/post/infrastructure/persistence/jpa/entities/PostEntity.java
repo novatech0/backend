@@ -1,5 +1,7 @@
 package com.agrotech.api.post.infrastructure.persistence.jpa.entities;
 
+import com.agrotech.api.post.domain.model.aggregates.Post;
+import com.agrotech.api.post.domain.model.commands.UpdatePostCommand;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.AdvisorEntity;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
@@ -27,4 +29,10 @@ public class PostEntity extends AuditableEntity {
     @ManyToOne
     @JoinColumn(name = "advisor_id")
     private AdvisorEntity advisor;
+
+    public void update(UpdatePostCommand command) {
+        this.title = command.title();
+        this.description = command.description();
+        this.image = command.image();
+    }
 }

@@ -1,5 +1,7 @@
 package com.agrotech.api.appointment.infrastructure.persistence.jpa.entities;
 
+import com.agrotech.api.appointment.domain.model.commands.UpdateAvailableDateCommand;
+import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.model.valueobjects.AvailableDateStatus;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.AdvisorEntity;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
@@ -38,4 +40,14 @@ public class AvailableDateEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AvailableDateStatus status;
+
+    public void update(UpdateAvailableDateCommand command) {
+        this.scheduledDate = command.scheduledDate();
+        this.startTime = command.startTime();
+        this.endTime = command.endTime();
+    }
+
+    public void updateStatus(String status) {
+        this.status = AvailableDateStatus.valueOf(status);
+    }
 }

@@ -35,12 +35,6 @@ public class Appointment {
         this.availableDate = availableDate;
     }
 
-    public Appointment update(UpdateAppointmentCommand command){
-        this.message = command.message();
-        this.status = AppointmentStatus.valueOf(command.status());
-        return this;
-    }
-
     public Long getAvailableDateId() {
         return availableDate.getId();
     }

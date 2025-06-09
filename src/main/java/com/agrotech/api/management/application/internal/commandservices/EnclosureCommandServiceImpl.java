@@ -27,26 +27,26 @@ public class EnclosureCommandServiceImpl implements EnclosureCommandService {
 
     @Override
     public Long handle(CreateEnclosureCommand command) {
-        var farmer = farmerRepository.findById(command.farmerId());
-        if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
-        var enclosure = new Enclosure(command, FarmerMapper.toDomain(farmer.get()));
-        enclosureRepository.save(EnclosureMapper.toEntity(enclosure));
-        return enclosure.getId();
+        var farmer = farmerRepository.findById(command.farmerId())
+                .orElseThrow(() -> new FarmerNotFoundException(command.farmerId()));
+        var enclosure = new Enclosure(command, FarmerMapper.toDomain(farmer));
+        var enclosureEntity = enclosureRepository.save(EnclosureMapper.toEntity(enclosure));
+        return enclosureEntity.getId();
     }
 
     @Override
     public Optional<Enclosure> handle(UpdateEnclosureCommand command) {
-        var enclosureEntity = enclosureRepository.findById(command.enclosureId());
-        if (enclosureEntity.isEmpty()) throw new EnclosureNotFoundException(command.enclosureId());
-        var enclosure = EnclosureMapper.toDomain(enclosureEntity.get());
-        enclosureRepository.save(EnclosureMapper.toEntity(enclosure.update(command)));
-        return Optional.of(enclosure);
+        var enclosureEntity = enclosureRepository.findById(command.enclosureId())
+                .orElseThrow(() -> new EnclosureNotFoundException(command.enclosureId()));
+        enclosureEntity.update(command);
+        enclosureRepository.save(enclosureEntity);
+        return Optional.of(EnclosureMapper.toDomain(enclosureEntity));
     }
 
     @Override
     public void handle(DeleteEnclosureCommand command) {
-        var enclosure = enclosureRepository.findById(command.enclosureId());
-        if (enclosure.isEmpty()) throw new EnclosureNotFoundException(command.enclosureId());
-        enclosureRepository.delete(enclosure.get());
+        var enclosure = enclosureRepository.findById(command.enclosureId())
+                .orElseThrow(() -> new EnclosureNotFoundException(command.enclosureId()));
+        enclosureRepository.delete(enclosure);
     }
 }

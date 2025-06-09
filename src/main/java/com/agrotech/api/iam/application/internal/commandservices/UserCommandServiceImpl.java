@@ -17,6 +17,7 @@ import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.UserMapper;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,11 +42,11 @@ public class UserCommandServiceImpl implements UserCommandService {
 
     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
-        var user = userRepository.findByUsername(command.username());
-        if (user.isEmpty()) throw new UserNotFoundInSignInException(command.username());
-        if (!hashingService.matches(command.password(), user.get().getPassword())) throw new InvalidPasswordException();
-        var token = tokenService.generateToken(user.get().getUsername());
-        return Optional.of(ImmutablePair.of(UserMapper.toDomain(user.get()), token));
+        var user = userRepository.findByUsername(command.username())
+                .orElseThrow(() -> new UserNotFoundInSignInException(command.username()));
+        if (!hashingService.matches(command.password(), user.getPassword())) throw new InvalidPasswordException();
+        var token = tokenService.generateToken(user.getUsername());
+        return Optional.of(ImmutablePair.of(UserMapper.toDomain(user), token));
     }
 
     @Override

@@ -28,47 +28,45 @@ public class AvailableDateCommandServiceImpl implements AvailableDateCommandServ
 
     @Override
     public Long handle(CreateAvailableDateCommand command) {
-        var advisor = externalProfilesService.fetchAdvisorById(command.advisorId());
-        if(advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
-        var sameAvailableDate = availableDateRepository.findByAdvisor_IdAndScheduledDateAndStartTimeAndEndTime(
-                command.advisorId(), command.scheduledDate(), command.startTime(), command.endTime());
-        if (sameAvailableDate.isPresent()) throw new SameAvailableDateException(command.scheduledDate(), command.startTime(), command.endTime());
+        var advisor = externalProfilesService.fetchAdvisorById(command.advisorId())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
+        availableDateRepository.findByAdvisor_IdAndScheduledDateAndStartTimeAndEndTime(command.advisorId(), command.scheduledDate(), command.startTime(), command.endTime())
+                .ifPresent(availableDate -> { throw new SameAvailableDateException(command.scheduledDate(), command.startTime(), command.endTime());});
         // Verification of the date
         if (command.scheduledDate().isBefore(LocalDateTime.now().toLocalDate())) {
             throw new InvalidDateException(command.scheduledDate());
         }
         validateTimeFormat(command.startTime(), command.endTime());
         validateTimeRange(command.startTime(), command.endTime());
-        var availableDate = new AvailableDate(command, advisor.get());
+        var availableDate = new AvailableDate(command, advisor);
         availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
         return availableDate.getId();
     }
 
     @Override
     public Optional<AvailableDate> handle(UpdateAvailableDateCommand command) {
-        var availableDateEntity = availableDateRepository.findById(command.id());
-        if(availableDateEntity.isEmpty()) return Optional.empty();
+        var availableDateEntity = availableDateRepository.findById(command.id())
+                .orElseThrow(() -> new AvailableDateNotFoundException(command.id()));
         validateTimeFormat(command.startTime(), command.endTime());
         validateTimeRange(command.startTime(), command.endTime());
-        var availableDate = AvailableDateMapper.toDomain(availableDateEntity.get()).update(command);
-        var updatedEntity = availableDateRepository.save(AvailableDateMapper.toEntity(availableDate));
-        return Optional.of(AvailableDateMapper.toDomain(updatedEntity));
+        availableDateEntity.update(command);
+        availableDateRepository.save(availableDateEntity);
+        return Optional.of(AvailableDateMapper.toDomain(availableDateEntity));
     }
 
     @Override
     public void handle(DeleteAvailableDateCommand command) {
-        var availableDate = availableDateRepository.findById(command.id());
-        if(availableDate.isEmpty()) throw new AvailableDateNotFoundException(command.id());
-        availableDateRepository.delete(availableDate.get());
+        var availableDate = availableDateRepository.findById(command.id())
+                .orElseThrow(() -> new AvailableDateNotFoundException(command.id()));
+        availableDateRepository.delete(availableDate);
     }
 
     @Override
     public void handle(UpdateAvailableDateStatusCommand command) {
-        var availableDateEntity = availableDateRepository.findById(command.id());
-        if(availableDateEntity.isEmpty()) throw new AvailableDateNotFoundException(command.id());
-        var availableDate = AvailableDateMapper.toDomain(availableDateEntity.get());
-        var updatedEntity = availableDate.updateStatus(command.status());
-        availableDateRepository.save(AvailableDateMapper.toEntity(updatedEntity));
+        var availableDateEntity = availableDateRepository.findById(command.id())
+                .orElseThrow(() -> new AvailableDateNotFoundException(command.id()));
+        availableDateEntity.updateStatus(command.status());
+        availableDateRepository.save(availableDateEntity);
     }
 
     private void validateTimeFormat(String startTime, String endTime) {

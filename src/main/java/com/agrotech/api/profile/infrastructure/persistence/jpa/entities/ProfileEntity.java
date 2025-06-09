@@ -1,6 +1,7 @@
 package com.agrotech.api.profile.infrastructure.persistence.jpa.entities;
 
 import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.UserEntity;
+import com.agrotech.api.profile.domain.model.commands.UpdateProfileCommand;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,4 +38,16 @@ public class ProfileEntity extends AuditableEntity {
     @OneToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    public void update(UpdateProfileCommand command) {
+        this.firstName = command.firstName();
+        this.lastName = command.lastName();
+        this.city = command.city();
+        this.country = command.country();
+        this.birthDate = command.birthDate();
+        this.description = command.description();
+        this.photo = command.photo();
+        this.occupation = command.occupation();
+        this.experience = command.experience();
+    }
 }

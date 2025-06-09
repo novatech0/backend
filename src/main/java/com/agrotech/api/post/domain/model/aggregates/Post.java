@@ -1,7 +1,6 @@
 package com.agrotech.api.post.domain.model.aggregates;
 
 import com.agrotech.api.post.domain.model.commands.CreatePostCommand;
-import com.agrotech.api.post.domain.model.commands.UpdatePostCommand;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
 import lombok.Getter;
 
@@ -28,13 +27,6 @@ public class Post {
         this.description = description;
         this.image = image;
         this.advisor = advisor;
-    }
-
-    public Post update(UpdatePostCommand command) {
-        this.title = command.title();
-        this.description = command.description();
-        this.image = command.image();
-        return this;
     }
 
     public Long getAdvisorId() {

@@ -1,5 +1,7 @@
 package com.agrotech.api.management.infrastructure.persistence.jpa.entities;
 
+import com.agrotech.api.management.domain.model.commands.UpdateAnimalCommand;
+import com.agrotech.api.management.domain.model.entities.Animal;
 import com.agrotech.api.management.domain.model.valueobjects.HealthStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -44,4 +46,14 @@ public class AnimalEntity {
     @ManyToOne
     @JoinColumn(name = "enclosure_id")
     private EnclosureEntity enclosure;
+
+    public void update(UpdateAnimalCommand command) {
+        this.name = command.name();
+        this.age = command.age();
+        this.species = command.species();
+        this.breed = command.breed();
+        this.gender = command.gender();
+        this.weight = command.weight();
+        this.health = HealthStatus.valueOf(command.health().toUpperCase());
+    }
 }

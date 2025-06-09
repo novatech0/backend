@@ -27,27 +27,27 @@ public class PostCommandServiceImpl implements PostCommandService {
 
     @Override
     public Long handle(CreatePostCommand command) {
-        var advisor = externalProfileService.fetchAdvisorById(command.advisorId());
-        if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
-        Post post = new Post(command, advisor.get());
-        postRepository.save(PostMapper.toEntity(post));
-        return post.getId();
+        var advisor = externalProfileService.fetchAdvisorById(command.advisorId())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
+        var post = new Post(command, advisor);
+        var postEntity = postRepository.save(PostMapper.toEntity(post));
+        return postEntity.getId();
     }
 
     @Override
     public Optional<Post> handle(UpdatePostCommand command) {
-        var post = postRepository.findById(command.id());
-        if (post.isEmpty()) return Optional.empty();
-        var postToUpdate = PostMapper.toDomain(post.get()).update(command);
-        var updatedEntity = postRepository.save(PostMapper.toEntity(postToUpdate));
+        var postEntity = postRepository.findById(command.id())
+                .orElseThrow(() -> new PostNotFoundException(command.id()));
+        postEntity.update(command);
+        var updatedEntity = postRepository.save(postEntity);
         return Optional.of(PostMapper.toDomain(updatedEntity));
     }
 
     @Override
     public void handle(DeletePostCommand command) {
-        var post = postRepository.findById(command.id());
-        if (post.isEmpty()) throw new PostNotFoundException(command.id());
-        postRepository.delete(post.get());
+        var postEntity = postRepository.findById(command.id())
+                .orElseThrow(() -> new PostNotFoundException(command.id()));
+        postRepository.delete(postEntity);
     }
 
 }

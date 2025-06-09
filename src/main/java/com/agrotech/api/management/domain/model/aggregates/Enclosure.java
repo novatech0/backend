@@ -30,13 +30,6 @@ public class Enclosure {
         this.farmer = farmer;
     }
 
-    public Enclosure update(UpdateEnclosureCommand command) {
-        this.name = command.name();
-        this.capacity = command.capacity();
-        this.type = command.type();
-        return this;
-    }
-
     public Long getFarmerId() {
         return this.farmer.getId();
     }

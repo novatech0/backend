@@ -1,5 +1,7 @@
 package com.agrotech.api.management.infrastructure.persistence.jpa.entities;
 
+import com.agrotech.api.management.domain.model.aggregates.Enclosure;
+import com.agrotech.api.management.domain.model.commands.UpdateEnclosureCommand;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
@@ -37,4 +39,10 @@ public class EnclosureEntity extends AuditableEntity {
     @ManyToOne
     @JoinColumn(name = "farmer_id")
     private FarmerEntity farmer;
+
+    public void update(UpdateEnclosureCommand command) {
+        this.name = command.name();
+        this.capacity = command.capacity();
+        this.type = command.type();
+    }
 }

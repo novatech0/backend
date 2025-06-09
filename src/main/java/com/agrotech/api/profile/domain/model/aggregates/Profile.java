@@ -53,19 +53,6 @@ public class Profile {
         this.user = user;
     }
 
-    public Profile update(UpdateProfileCommand command) {
-        this.firstName = command.firstName();
-        this.lastName = command.lastName();
-        this.city = command.city();
-        this.country = command.country();
-        this.birthDate = command.birthDate();
-        this.description = command.description();
-        this.photo = command.photo();
-        this.occupation = command.occupation();
-        this.experience = command.experience();
-        return this;
-    }
-
     public Long getUserId() {
         return this.user.getId();
     }

@@ -27,34 +27,30 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
 
     @Override
     public Long handle(CreateProfileCommand command) {
-        var user = externalUserService.fetchUserById(command.userId());
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(command.userId());
-        }
-        var sameUser = profileRepository.findByUser_Id(command.userId());
-        if (sameUser.isPresent()) {
-            throw new UserAlreadyUsedException(command.userId());
-        }
-        Profile profile = new Profile(command, user.get());
-        profileRepository.save(ProfileMapper.toEntity(profile));
-        return profile.getId();
+        var user = externalUserService.fetchUserById(command.userId())
+                .orElseThrow(() -> new UserNotFoundException(command.userId()));
+       profileRepository.findByUser_Id(command.userId())
+                .ifPresent(existingProfile -> {
+                    throw new UserAlreadyUsedException(command.userId());
+                });
+        var profile = new Profile(command, user);
+        var profileEntity = profileRepository.save(ProfileMapper.toEntity(profile));
+        return profileEntity.getId();
     }
 
     @Override
     public Optional<Profile> handle(UpdateProfileCommand command) {
-        var profileEntity = profileRepository.findById(command.id());
-        if (profileEntity.isEmpty()) return Optional.empty();
-        var profile = ProfileMapper.toDomain(profileEntity.get()).update(command);
-        var updatedEntity = profileRepository.save(ProfileMapper.toEntity(profile));
+        var profileEntity = profileRepository.findById(command.id())
+                .orElseThrow(() -> new ProfileNotFoundException(command.id()));
+        profileEntity.update(command);
+        var updatedEntity = profileRepository.save(profileEntity);
         return Optional.of(ProfileMapper.toDomain(updatedEntity));
     }
 
     @Override
     public void handle(DeleteProfileCommand command) {
-        var profile = profileRepository.findById(command.id());
-        if (profile.isEmpty()) {
-            throw new ProfileNotFoundException(command.id());
-        }
-        profileRepository.delete(profile.get());
+        var profileEntity = profileRepository.findById(command.id())
+                .orElseThrow(() -> new ProfileNotFoundException(command.id()));
+        profileRepository.delete(profileEntity);
     }
 }

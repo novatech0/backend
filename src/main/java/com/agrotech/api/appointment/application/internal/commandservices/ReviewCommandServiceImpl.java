@@ -30,35 +30,35 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
 
     @Override
     public Long handle(CreateReviewCommand command) {
-        var advisor = externalProfilesService.fetchAdvisorById(command.advisorId());
-        var farmer = externalProfilesService.fetchFarmerById(command.farmerId());
-        var existingReview = reviewRepository.findByAdvisor_IdAndFarmer_Id(command.advisorId(), command.farmerId());
-        if (existingReview.isPresent()) throw new ReviewAlreadyExistsException(command.advisorId(), command.farmerId());
-        if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
-        if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
+        var advisor = externalProfilesService.fetchAdvisorById(command.advisorId())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
+        var farmer = externalProfilesService.fetchFarmerById(command.farmerId())
+                .orElseThrow(() -> new FarmerNotFoundException(command.farmerId()));
+        reviewRepository.findByAdvisor_IdAndFarmer_Id(command.advisorId(), command.farmerId())
+                .ifPresent(existingReview -> { throw new ReviewAlreadyExistsException(command.advisorId(), command.farmerId()); });
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
-        Review review = new Review(command, advisor.get(), farmer.get());
-        reviewRepository.save(ReviewMapper.toEntity(review));
+        var review = new Review(command, advisor, farmer);
+        var reviewEntity = reviewRepository.save(ReviewMapper.toEntity(review));
         updateAdvisorRating(command.advisorId());
-        return review.getId();
+        return reviewEntity.getId();
     }
 
     @Override
     public Optional<Review> handle(UpdateReviewCommand command) {
-        var reviewEntity = reviewRepository.findById(command.id());
-        if (reviewEntity.isEmpty()) return Optional.empty();
+        var reviewEntity = reviewRepository.findById(command.id())
+                .orElseThrow(() -> new ReviewNotFoundException(command.id()));
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
-        var review = ReviewMapper.toDomain(reviewEntity.get()).update(command);
-        var updatedEntity = reviewRepository.save(ReviewMapper.toEntity(review));
-        updateAdvisorRating(review.getAdvisor().getId());
-        return Optional.of(ReviewMapper.toDomain(updatedEntity));
+        reviewEntity.update(command);
+        reviewRepository.save(reviewEntity);
+        updateAdvisorRating(reviewEntity.getAdvisor().getId());
+        return Optional.of(ReviewMapper.toDomain(reviewEntity));
     }
 
     @Override
     public void handle(DeleteReviewCommand command) {
-        var review = reviewRepository.findById(command.id());
-        if (review.isEmpty()) throw new ReviewNotFoundException(command.id());
-        reviewRepository.delete(review.get());
+        var review = reviewRepository.findById(command.id())
+                .orElseThrow(() -> new ReviewNotFoundException(command.id()));
+        reviewRepository.delete(review);
     }
 
     private void updateAdvisorRating(Long advisorId) {

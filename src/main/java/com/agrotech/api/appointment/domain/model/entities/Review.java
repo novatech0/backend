@@ -32,12 +32,6 @@ public class Review {
         this.farmer = farmer;
     }
 
-    public Review update(UpdateReviewCommand command) {
-        this.comment = command.comment();
-        this.rating = command.rating();
-        return this;
-    }
-
     public Long getAdvisorId() {
         return advisor.getId();
     }

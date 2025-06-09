@@ -1,5 +1,7 @@
 package com.agrotech.api.appointment.infrastructure.persistence.jpa.entities;
 
+import com.agrotech.api.appointment.domain.model.commands.UpdateReviewCommand;
+import com.agrotech.api.appointment.domain.model.entities.Review;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.AdvisorEntity;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
@@ -36,4 +38,9 @@ public class ReviewEntity {
     @Max(5)
     @NotNull
     private Integer rating;
+
+    public void update(UpdateReviewCommand command) {
+        this.comment = command.comment();
+        this.rating = command.rating();
+    }
 }

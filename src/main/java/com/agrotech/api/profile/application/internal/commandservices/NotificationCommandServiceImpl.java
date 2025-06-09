@@ -23,22 +23,18 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
 
     @Override
     public Long handle(CreateNotificationCommand command) {
-        var user = externalUserService.fetchUserById(command.userId());
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(command.userId());
-        }
-        var notification = new Notification(command, user.get());
-        notificationRepository.save(NotificationMapper.toEntity(notification));
-        return notification.getId();
+        var user = externalUserService.fetchUserById(command.userId())
+                        .orElseThrow(() -> new UserNotFoundException(command.userId()));
+        var notification = new Notification(command, user);
+        var notificationEntity = notificationRepository.save(NotificationMapper.toEntity(notification));
+        return notificationEntity.getId();
     }
 
     @Override
     public void handle(DeleteNotificationCommand command) {
-        var notification = notificationRepository.findById(command.id());
-        if (notification.isEmpty()) {
-            throw new NotificationNotFoundException(command.id());
-        }
-        notificationRepository.delete(notification.get());
+        var notificationEntity = notificationRepository.findById(command.id())
+                .orElseThrow(() -> new NotificationNotFoundException(command.id()));
+        notificationRepository.delete(notificationEntity);
 
     }
 }

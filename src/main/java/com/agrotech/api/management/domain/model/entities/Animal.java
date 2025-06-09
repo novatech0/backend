@@ -43,17 +43,6 @@ public class Animal {
         this.enclosure = enclosure;
     }
 
-    public Animal update(UpdateAnimalCommand command) {
-        this.name = command.name();
-        this.age = command.age();
-        this.species = command.species();
-        this.breed = command.breed();
-        this.gender = command.gender();
-        this.weight = command.weight();
-        this.health = HealthStatus.valueOf(command.health().toUpperCase());
-        return this;
-    }
-
     public Long getEnclosureId() {
         return this.enclosure.getId();
     }

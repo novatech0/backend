@@ -22,20 +22,16 @@ public class FarmerCommandServiceImpl implements FarmerCommandService {
     @Override
     public Long handle(CreateFarmerCommand command, User user) {
         var sameUser = farmerRepository.findByUser_Id(command.userId());
-        if (sameUser.isPresent()) {
-            throw new UserNotFoundException(command.userId());
-        }
+        if (sameUser.isPresent()) throw new UserNotFoundException(command.userId());
         var farmer = new Farmer(user);
-        farmerRepository.save(FarmerMapper.toEntity(farmer));
-        return farmer.getId();
+        var farmerEntity = farmerRepository.save(FarmerMapper.toEntity(farmer));
+        return farmerEntity.getId();
     }
 
     @Override
     public void handle(DeleteFarmerCommand command) {
-        var farmer = farmerRepository.findById(command.id());
-        if (farmer.isEmpty()) {
-            throw new FarmerNotFoundException(command.id());
-        }
-        farmerRepository.delete(farmer.get());
+        var farmerEntity = farmerRepository.findById(command.id())
+                .orElseThrow(() -> new FarmerNotFoundException(command.id()));
+        farmerRepository.delete(farmerEntity);
     }
 }

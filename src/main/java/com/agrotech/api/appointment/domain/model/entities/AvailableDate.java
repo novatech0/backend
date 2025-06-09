@@ -37,18 +37,6 @@ public class AvailableDate {
         this.advisor = advisor;
     }
 
-    public AvailableDate update(UpdateAvailableDateCommand command) {
-        this.scheduledDate = command.scheduledDate();
-        this.startTime = command.startTime();
-        this.endTime = command.endTime();
-        return this;
-    }
-
-    public AvailableDate updateStatus(String status) {
-        this.status = AvailableDateStatus.valueOf(status);
-        return this;
-    }
-
     public Long getAdvisorId() {
         return advisor.getId();
     }

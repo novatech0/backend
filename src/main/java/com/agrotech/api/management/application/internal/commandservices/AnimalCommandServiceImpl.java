@@ -28,29 +28,29 @@ public class AnimalCommandServiceImpl implements AnimalCommandService {
 
     @Override
     public Long handle(CreateAnimalCommand command) {
-        var enclosure = enclosureRepository.findById(command.enclosureId());
-        if (enclosure.isEmpty()) throw new EnclosureNotFoundException(command.enclosureId());
-        var animal = new Animal(command, EnclosureMapper.toDomain(enclosure.get()));
-        animalRepository.save(AnimalMapper.toEntity(animal));
-        return animal.getId();
+        var enclosure = enclosureRepository.findById(command.enclosureId())
+                .orElseThrow(() -> new EnclosureNotFoundException(command.enclosureId()));
+        var animal = new Animal(command, EnclosureMapper.toDomain(enclosure));
+        var animalEntity = animalRepository.save(AnimalMapper.toEntity(animal));
+        return animalEntity.getId();
     }
 
     @Override
     public Optional<Animal> handle(UpdateAnimalCommand command) {
-        var animalEntity = animalRepository.findById(command.animalId());
-        if (animalEntity.isEmpty()) return Optional.empty();
+        var animalEntity = animalRepository.findById(command.animalId())
+                .orElseThrow(() -> new AnimalNotFoundException(command.animalId()));
         if (command.health() != null  &&  !command.health().matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {
             throw new IncorrectHealthStatusException(command.health());
         }
-        var animal = AnimalMapper.toDomain(animalEntity.get());
-        animalRepository.save(AnimalMapper.toEntity(animal.update(command)));
-        return Optional.of(animal);
+        animalEntity.update(command);
+        animalRepository.save(animalEntity);
+        return Optional.of(AnimalMapper.toDomain(animalEntity));
     }
 
     @Override
     public void handle(DeleteAnimalCommand command) {
-        var animal = animalRepository.findById(command.animalId());
-        if (animal.isEmpty()) throw new AnimalNotFoundException(command.animalId());
-        animalRepository.delete(animal.get());
+        var animalEntity = animalRepository.findById(command.animalId())
+                .orElseThrow(() -> new AnimalNotFoundException(command.animalId()));
+        animalRepository.delete(animalEntity);
     }
 }

@@ -1,5 +1,7 @@
 package com.agrotech.api.appointment.infrastructure.persistence.jpa.entities;
 
+import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
+import com.agrotech.api.appointment.domain.model.commands.UpdateAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.valueobjects.AppointmentStatus;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
@@ -34,4 +36,9 @@ public class AppointmentEntity extends AuditableEntity {
     @OneToOne
     @JoinColumn(name = "available_date_id")
     private AvailableDateEntity availableDate;
+
+    public void update(UpdateAppointmentCommand command){
+        this.message = command.message();
+        this.status = AppointmentStatus.valueOf(command.status());
+    }
 }
