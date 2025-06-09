@@ -48,4 +48,8 @@ public class Appointment {
     public Long getFarmerId() {
         return farmer.getId();
     }
+
+    public String getAppointmentStatus() {
+        return status.name();
+    }
 }

@@ -11,6 +11,7 @@ import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.iam.domain.model.commands.SignInCommand;
 import com.agrotech.api.iam.domain.model.commands.SignUpCommand;
 import com.agrotech.api.iam.domain.services.UserCommandService;
+import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.UserEntity;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.RoleMapper;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.UserMapper;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
@@ -52,15 +53,20 @@ public class UserCommandServiceImpl implements UserCommandService {
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username())) throw new UsernameAlreadyExistsException();
         var roles = command.roles().stream().map(role -> roleRepository.findByName(role.getName()).orElseThrow(() -> new InvalidRoleException(role.getStringName()))).toList();
-        var user = new User(command.username(), hashingService.encode(command.password()), roles.stream().map(RoleMapper::toDomain).collect(Collectors.toList()));
-        userRepository.save(UserMapper.toEntity(user));
+        var userEntity =
+                UserEntity.builder()
+                .username(command.username())
+                .password(hashingService.encode(command.password()))
+                .roles(new java.util.HashSet<>(roles))
+                .build();
+        userRepository.save(userEntity);
         //Create a farmer or advisor depending on the role
         roles.stream().map(RoleMapper::toDomain).forEach(role -> {
             if (role.getStringName().equals("ROLE_FARMER")) {
-                externalProfileRoleService.createFarmer(user.getId(), user);
+                externalProfileRoleService.createFarmer(userEntity.getId(), UserMapper.toDomain(userEntity));
             }
             if (role.getStringName().equals("ROLE_ADVISOR")) {
-                externalProfileRoleService.createAdvisor(user.getId(), user);
+                externalProfileRoleService.createAdvisor(userEntity.getId(), UserMapper.toDomain(userEntity));
             }
         });
         return userRepository.findByUsername(command.username()).map(UserMapper::toDomain);
