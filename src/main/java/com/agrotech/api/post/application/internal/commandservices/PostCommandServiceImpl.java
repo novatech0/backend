@@ -1,6 +1,9 @@
 package com.agrotech.api.post.application.internal.commandservices;
 
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.mappers.AppointmentMapper;
 import com.agrotech.api.post.application.internal.outboundservices.acl.ExternalProfileService;
+import com.agrotech.api.post.infrastructure.persistence.jpa.entities.PostEntity;
+import com.agrotech.api.post.infrastructure.persistence.jpa.mappers.PostMapper;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.post.domain.exceptions.PostNotFoundException;
 import com.agrotech.api.post.domain.model.aggregates.Post;
@@ -25,26 +28,30 @@ public class PostCommandServiceImpl implements PostCommandService {
 
     @Override
     public Long handle(CreatePostCommand command) {
-        var advisor = externalProfileService.fetchAdvisorById(command.advisorId())
-                .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
-        Post post = new Post(command, advisor);
-        Post postsave=postRepository.save(post);
-        return postsave.getId();
+        var advisor = externalProfileService.fetchAdvisorById(command.advisorId());
+        if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
+
+        var postEntity = PostMapper.toEntity(command, advisor.get());
+        postRepository.save(postEntity);
+        return postEntity.getId();
     }
 
     @Override
     public Optional<Post> handle(UpdatePostCommand command) {
-        var post = postRepository.findById(command.id())
-                .orElseThrow(() -> new PostNotFoundException(command.id()));
-        Post updatedPost = postRepository.save(post.update(command));
-        return Optional.of(updatedPost);
+        var post = postRepository.findById(command.id());
+        if (post.isEmpty()) throw new PostNotFoundException(command.id());
+
+        var postToUpdate = post.get().update(command);
+        PostEntity updatedPost = postRepository.save(postToUpdate);
+        return Optional.of(PostMapper.toDomain(updatedPost));
     }
 
     @Override
     public void handle(DeletePostCommand command) {
-        var post = postRepository.findById(command.id())
-                .orElseThrow(() -> new PostNotFoundException(command.id()));
-        postRepository.delete(post);
+        var post = postRepository.findById(command.id());
+        if (post.isEmpty()) throw new PostNotFoundException(command.id());
+
+        postRepository.delete(post.get());
     }
 
 }
