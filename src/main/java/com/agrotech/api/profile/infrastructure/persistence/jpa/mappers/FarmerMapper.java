@@ -15,6 +15,7 @@ public class FarmerMapper {
     public static FarmerEntity toEntity(Farmer domain) {
         if (domain == null) return null;
         return FarmerEntity.builder()
+                .id(domain.getId())
                 .user(UserMapper.toEntity(domain.getUser()))
                 .build();
     }
