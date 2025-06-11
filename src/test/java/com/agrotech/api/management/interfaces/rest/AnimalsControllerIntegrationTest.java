@@ -6,24 +6,26 @@ import com.agrotech.api.iam.domain.model.commands.SignInCommand;
 import com.agrotech.api.iam.domain.model.commands.SignUpCommand;
 import com.agrotech.api.iam.domain.model.entities.Role;
 import com.agrotech.api.iam.domain.services.UserCommandService;
-import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.UserEntity;
 import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateAnimalCommand;
 import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
 import com.agrotech.api.management.domain.model.entities.Animal;
+import com.agrotech.api.management.domain.model.queries.GetAnimalByIdQuery;
+import com.agrotech.api.management.domain.model.queries.GetEnclosureByIdQuery;
 import com.agrotech.api.management.domain.model.valueobjects.HealthStatus;
-import com.agrotech.api.management.infrastructure.persistence.jpa.entities.AnimalEntity;
-import com.agrotech.api.management.infrastructure.persistence.jpa.entities.EnclosureEntity;
-import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.EnclosureMapper;
-import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.AnimalRepository;
-import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.domain.services.AnimalCommandService;
+import com.agrotech.api.management.domain.services.AnimalQueryService;
+import com.agrotech.api.management.domain.services.EnclosureCommandService;
+import com.agrotech.api.management.domain.services.EnclosureQueryService;
 import com.agrotech.api.management.interfaces.rest.resources.CreateAnimalResource;
+import com.agrotech.api.management.interfaces.rest.resources.UpdateAnimalResource;
 import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
-import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
-import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.FarmerMapper;
-import com.agrotech.api.profile.infrastructure.persistence.jpa.repositories.FarmerRepository;
+import com.agrotech.api.profile.domain.model.queries.GetFarmerByIdQuery;
+import com.agrotech.api.profile.domain.services.FarmerCommandService;
+import com.agrotech.api.profile.domain.services.FarmerQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -34,64 +36,66 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = AgrotechApplication.class)
 @AutoConfigureMockMvc
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class AnimalsControllerIntegrationTest {
-
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
-    private AnimalRepository animalRepository;
-
+    private AnimalCommandService animalCommandService;
     @Autowired
-    private EnclosureRepository enclosureRepository;
-
+    private AnimalQueryService animalQueryService;
     @Autowired
-    private FarmerRepository farmerRepository;
-
+    private EnclosureCommandService enclosureCommandService;
+    @Autowired
+    private EnclosureQueryService enclosureQueryService;
+    @Autowired
+    private FarmerCommandService farmerCommandService;
+    @Autowired
+    private FarmerQueryService farmerQueryService;
     @Autowired
     private UserCommandService userCommandService;
 
     private String token;
-    private Farmer farmer;
+    private Long enclosureId;
 
     @BeforeEach
-    void setup() {
-        Optional<User> user = userCommandService.handle(new SignUpCommand("getuser@example.com", "password", List.of(Role.getDefaultRole())));
-        String token = userCommandService.handle(new SignInCommand("getuser@example.com", "password")).orElseThrow().getRight();
-        Farmer farmer = FarmerMapper.toDomain(farmerRepository.save(FarmerMapper.toEntity(new Farmer(user.get()))));
-
-        this.token = token;
-        this.farmer = farmer;
+    void setup() throws Throwable { // fail es un Throwable
+        User user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())))
+                .orElseThrow(() -> fail("User creation failed"));
+        ImmutablePair<User, String> signInResult = userCommandService.handle(new SignInCommand("testuser@example.com", "password"))
+                .orElseThrow(() -> fail("User sign-in failed"));
+        Long farmerId = farmerCommandService.handle(new CreateFarmerCommand(user.getId()), user);
+        Farmer farmer = farmerQueryService.handle(new GetFarmerByIdQuery(farmerId))
+                .orElseThrow(() -> fail("Farmer creation failed"));
+        // Create an enclosure for animal tests
+        Long enclosureId = enclosureCommandService.handle(new CreateEnclosureCommand("Barn", 10, "Cow", farmer.getId()));
+        Enclosure enclosure = enclosureQueryService.handle(new GetEnclosureByIdQuery(enclosureId))
+                .orElseThrow(() -> fail("Enclosure creation failed"));
+        this.token = signInResult.getRight();
+        this.enclosureId = enclosure.getId();
     }
 
     @Test
     void postAnimal() throws Exception {
-        // Convertimos a Entity para persistir
-        Enclosure enclosure = new Enclosure(new CreateEnclosureCommand("Paddock", 2, "Cow", farmer.getId()), farmer);
-        EnclosureEntity savedEntity = enclosureRepository.save(EnclosureMapper.toEntity(enclosure));
-        Enclosure savedEnclosure = EnclosureMapper.toDomain(savedEntity);
-
-        CreateAnimalResource animal = new CreateAnimalResource(
-                "Bella", 3, "Cow", "Holstein", false, 450.0f, "HEALTHY", savedEnclosure.getId()
-        );
-
+        // Arrange
+        CreateAnimalResource resource = new CreateAnimalResource("Bella", 3, "Cow", "Holstein", false, 450.0f, "HEALTHY", enclosureId);
+        // Act
         mockMvc.perform(post("/api/v1/animals")
                         .contentType("application/json")
                         .header("Authorization", "Bearer " + token)
-                        .content(objectMapper.writeValueAsString(animal)))
+                        .content(objectMapper.writeValueAsString(resource)))
+                // Assert
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Bella"))
                 .andExpect(jsonPath("$.age").value(3))
@@ -103,47 +107,73 @@ class AnimalsControllerIntegrationTest {
     }
 
     @Test
-    void postAnimalWithInvalidToken() throws Exception {
-        CreateAnimalResource animal = new CreateAnimalResource(
-                "Test", 2, "Cow", "Holstein", false, 400.0f, "HEALTHY", 1L
-        );
-
-        mockMvc.perform(post("/api/v1/animals")
-                        .contentType("application/json")
-                        .header("Authorization", "Bearer invalid_token")
-                        .content(objectMapper.writeValueAsString(animal)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     void getAnimals() throws Exception {
-        // Create a UserEntity instance
-        UserEntity userEntity = new UserEntity();
-        userEntity.setUsername("juan@mail.com");
-        userEntity.setPassword("123456789");
+        // Arrange
+        CreateAnimalCommand commandOne = new CreateAnimalCommand("Luna", 2, "Sheep", "Merino", true, 70.5f, HealthStatus.HEALTHY.name(), enclosureId);
+        CreateAnimalCommand commandTwo = new CreateAnimalCommand("Leo", 4, "Sheep", "Suffolk", false, 80.0f, HealthStatus.HEALTHY.name(), enclosureId);
 
-        // Save the UserEntity and use it to create a FarmerEntity
-        FarmerEntity savedFarmer = farmerRepository.save(new FarmerEntity(null, userEntity));
+        animalCommandService.handle(commandOne);
+        animalCommandService.handle(commandTwo);
 
-        // Create and save the EnclosureEntity with the associated FarmerEntity
-        EnclosureEntity savedEnclosure = enclosureRepository.save(
-                new EnclosureEntity(null, "Paddock", 2, "Sheep", savedFarmer)
-        );
-
-        // Save two animals related to the enclosure
-        animalRepository.save(new AnimalEntity(null, "Luna", 2, "Sheep", "Merino", true, 70.5f, HealthStatus.HEALTHY, savedEnclosure));
-        animalRepository.save(new AnimalEntity(null, "Leo", 4, "Sheep", "Suffolk", false, 80.0f, HealthStatus.HEALTHY, savedEnclosure));
-
-        // Execute the endpoint and verify the response
+        // Act
         mockMvc.perform(get("/api/v1/animals")
                         .header("Authorization", "Bearer " + token))
+                // Assert
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].name").value("Luna"))
                 .andExpect(jsonPath("$[1].name").value("Leo"));
     }
 
+    @Test
+    void updateAnimal() throws Throwable {
+        // Arrange
+        CreateAnimalCommand command = new CreateAnimalCommand("Max", 4, "Horse", "Arabian", true, 500.0f, HealthStatus.HEALTHY.name(), enclosureId);
+        Long animalId = animalCommandService.handle(command);
 
+        Animal animal = animalQueryService.handle(new GetAnimalByIdQuery(animalId))
+                .orElseThrow(() -> fail("Animal creation failed"));
 
+        UpdateAnimalResource updateResource = new UpdateAnimalResource("Maximus", 5, "Horse", "Thoroughbred", true, 520.0f, "HEALTHY");
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/animals/" + animal.getId())
+                        .contentType("application/json")
+                        .header("Authorization", "Bearer " + token)
+                        .content(objectMapper.writeValueAsString(updateResource)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Maximus"))
+                .andExpect(jsonPath("$.age").value(5))
+                .andExpect(jsonPath("$.breed").value("Thoroughbred"))
+                .andExpect(jsonPath("$.weight").value(520.0));
+    }
+
+    @Test
+    void deleteAnimal() throws Exception {
+        // Arrange
+        CreateAnimalCommand command = new CreateAnimalCommand("Toby", 1, "Pig", "Large White", true, 90.0f, HealthStatus.SICK.name(), enclosureId);
+        Long animalId = animalCommandService.handle(command);
+
+        // Act & Assert
+        mockMvc.perform(delete("/api/v1/animals/" + animalId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        assertFalse(animalQueryService.handle(new GetAnimalByIdQuery(animalId)).isPresent(), "Animal should be deleted");
+    }
+
+    @Test
+    void postAnimalWithInvalidToken() throws Exception {
+        // Arrange
+        CreateAnimalResource resource = new CreateAnimalResource("Test", 2, "Cow", "Holstein", false, 400.0f, HealthStatus.HEALTHY.name(), enclosureId);
+        // Act
+        mockMvc.perform(post("/api/v1/animals")
+                        .contentType("application/json")
+                        .header("Authorization", "Bearer invalid_token")
+                        .content(objectMapper.writeValueAsString(resource)))
+                // Assert
+                .andExpect(status().isUnauthorized());
+    }
 
     @Test
     void getAnimalsWithInvalidToken() throws Exception {
@@ -153,71 +183,19 @@ class AnimalsControllerIntegrationTest {
     }
 
     @Test
-    void deleteAnimal() throws Exception {
-        // Crear EnclosureEntity con FarmerEntity
-        Enclosure enclosure = new Enclosure(new CreateEnclosureCommand("Corral", 4, "Pig", farmer.getId()), farmer);
-        EnclosureEntity savedEnclosure = enclosureRepository.save(EnclosureMapper.toEntity(enclosure));
-
-        // Crear y guardar AnimalEntity
-        AnimalEntity animal = animalRepository.save(new AnimalEntity(
-                null, "Toby", 1, "Pig", "Large White", true, 90.0f, HealthStatus.SICK, savedEnclosure
-        ));
-
-        // Ejecutar DELETE
-        mockMvc.perform(delete("/api/v1/animals/" + animal.getId())
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
-
-        // Verificar que se eliminó
-        assertFalse(animalRepository.findById(animal.getId()).isPresent());
+    void updateAnimalWithInvalidToken() throws Exception {
+        UpdateAnimalResource update = new UpdateAnimalResource("Invalid", 1, "Pig", "Mixed", true, 80.0f, HealthStatus.SICK.name());
+        mockMvc.perform(put("/api/v1/animals/1")
+                        .contentType("application/json")
+                        .header("Authorization", "Bearer invalid_token")
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void deleteAnimalWithInvalidToken() throws Exception {
         mockMvc.perform(delete("/api/v1/animals/1")
                         .header("Authorization", "Bearer invalid_token"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void updateAnimal() throws Exception {
-        // Crear EnclosureEntity con FarmerEntity
-        Enclosure enclosure = new Enclosure(new CreateEnclosureCommand("Stable", 5, "Horse", farmer.getId()), farmer);
-        EnclosureEntity savedEnclosure = enclosureRepository.save(EnclosureMapper.toEntity(enclosure));
-
-        // Crear y guardar AnimalEntity
-        AnimalEntity animal = animalRepository.save(new AnimalEntity(
-                null, "Max", 4, "Horse", "Arabian", true, 500.0f, HealthStatus.HEALTHY, savedEnclosure
-        ));
-
-        // Crear recurso con nuevos datos
-        CreateAnimalResource updatedAnimal = new CreateAnimalResource(
-                "Maximus", 5, "Horse", "Thoroughbred", true, 520.0f, "HEALTHY", savedEnclosure.getId()
-        );
-
-        // Ejecutar PUT
-        mockMvc.perform(put("/api/v1/animals/" + animal.getId())
-                        .contentType("application/json")
-                        .header("Authorization", "Bearer " + token)
-                        .content(objectMapper.writeValueAsString(updatedAnimal)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Maximus"))
-                .andExpect(jsonPath("$.age").value(5))
-                .andExpect(jsonPath("$.breed").value("Thoroughbred"))
-                .andExpect(jsonPath("$.weight").value(520.0));
-    }
-
-
-    @Test
-    void updateAnimalWithInvalidToken() throws Exception {
-        CreateAnimalResource updatedAnimal = new CreateAnimalResource(
-                "Invalid", 1, "Pig", "Mixed", true, 80.0f, "SICK", 1L
-        );
-
-        mockMvc.perform(put("/api/v1/animals/1")
-                        .contentType("application/json")
-                        .header("Authorization", "Bearer invalid_token")
-                        .content(objectMapper.writeValueAsString(updatedAnimal)))
                 .andExpect(status().isUnauthorized());
     }
 }
