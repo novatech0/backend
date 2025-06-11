@@ -93,10 +93,8 @@ class AppointmentCommandServiceImplTest {
         AppointmentEntity capturedAppointmentEntity = appointmentCaptor.getValue();
         assertEquals(message, capturedAppointmentEntity.getMessage());
         assertEquals(AppointmentStatus.PENDING, capturedAppointmentEntity.getStatus());
-        // Aquí no tienes objetos Farmer ni AvailableDate en la entidad, normalmente son IDs o referencias planas,
-        // adapta según cómo sea tu AppointmentEntity:
-        assertEquals(farmerId, capturedAppointmentEntity.getFarmer());
-        assertEquals(availableDateId, capturedAppointmentEntity.getAvailableDate());
+        assertEquals(farmerId, capturedAppointmentEntity.getFarmer().getId());
+        assertEquals(availableDateId, capturedAppointmentEntity.getAvailableDate().getId());
         assertEquals(expectedMeetingUrl, capturedAppointmentEntity.getMeetingUrl());
 
         verify(appointmentRepository).save(any(AppointmentEntity.class));

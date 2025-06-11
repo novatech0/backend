@@ -27,7 +27,7 @@ class AppointmentTest {
         when(availableDate.getId()).thenReturn(availableDateId);
 
         // Act
-        Appointment appointment = new Appointment().create(command, farmer, availableDate);
+        Appointment appointment = Appointment.create(command, farmer, availableDate);
 
         // Assert
         assertEquals(message, appointment.getMessage());
