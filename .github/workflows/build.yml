@@ -29,6 +29,17 @@ jobs:
           distribution: 'temurin'
           java-version: '22'
 
+      - name: Cache de dependencias Maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Descargar dependencias
+        run: mvn dependency:go-offline
+
       - name: Verificar conexión a la base de datos remota
         run: |
           sudo apt-get update
@@ -36,7 +47,4 @@ jobs:
           mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; SHOW TABLES;"
 
       - name: Build y Tests
-        run: mvn clean verify
-
-      - name: Empaquetar (sin tests)
-        run: mvn package -DskipTests
+        run: mvn -B clean verify
