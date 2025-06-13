@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -19,7 +20,13 @@ public class GlobalExceptionsHandler {
     // Maneja excepciones generales
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGlobalException(Exception e) {
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Internal Server Error", "Ocurrió un error inesperado.");
+        String message = e.getMessage() != null ? e.getMessage() : "Ocurrió un error inesperado.";
+        String stackTrace = Arrays.stream(e.getStackTrace())
+                .limit(3)
+                .map(StackTraceElement::toString)
+                .collect(Collectors.joining("\n"));
+        String detailedMessage = String.format("Mensaje: %s\nTraza: %s", message, stackTrace);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Error Interno del Servidor", detailedMessage);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     // Jakarta Validations
