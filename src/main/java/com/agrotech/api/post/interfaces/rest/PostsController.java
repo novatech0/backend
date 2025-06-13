@@ -84,7 +84,7 @@ public class PostsController {
     public ResponseEntity<PostResource> updatePost(@PathVariable Long id, @RequestBody UpdatePostResource updatePostResource) {
         var updatePostCommand = UpdatePostCommandFromResourceAssembler.toCommandFromResource(id, updatePostResource);
         Optional<Post> post = postCommandService.handle(updatePostCommand);
-        if (post.isEmpty()) return ResponseEntity.badRequest().build();
+        if (post.isEmpty()) return ResponseEntity.notFound().build();
         var postResource = PostResourceFromEntityAssembler.toResourceFromEntity(post.get());
         return ResponseEntity.ok(postResource);
     }

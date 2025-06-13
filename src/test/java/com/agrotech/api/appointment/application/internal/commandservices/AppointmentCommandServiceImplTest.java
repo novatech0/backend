@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.exceptions.AvailableDateNotFoundException;
-import com.agrotech.api.appointment.domain.model.aggregates.Appointment;
 import com.agrotech.api.appointment.domain.model.commands.CreateAppointmentCommand;
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
@@ -14,6 +13,7 @@ import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByIdQue
 import com.agrotech.api.appointment.domain.model.valueobjects.AppointmentStatus;
 import com.agrotech.api.appointment.domain.model.valueobjects.AvailableDateStatus;
 import com.agrotech.api.appointment.domain.services.AvailableDateQueryService;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.entities.AppointmentEntity;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.AppointmentRepository;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
@@ -29,7 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Optional;
 
 class AppointmentCommandServiceImplTest {
-    // Successfully creating an appointment with valid command data
+
     @Mock
     private AppointmentRepository appointmentRepository;
     @Mock
@@ -71,19 +71,17 @@ class AppointmentCommandServiceImplTest {
         when(farmer.getId()).thenReturn(farmerId);
 
         when(availableDateQueryService.handle(
-                argThat((GetAvailableDateByIdQuery query) ->
-                        query.id().equals(availableDateId)
-                )
+                argThat((GetAvailableDateByIdQuery query) -> query.id().equals(availableDateId))
         )).thenReturn(Optional.of(availableDate));
 
         when(externalProfilesService.fetchAdvisorById(advisorId)).thenReturn(Optional.of(advisor));
         when(externalProfilesService.fetchFarmerById(farmerId)).thenReturn(Optional.of(farmer));
 
-        ArgumentCaptor<Appointment> appointmentCaptor = ArgumentCaptor.forClass(Appointment.class);
+        ArgumentCaptor<AppointmentEntity> appointmentCaptor = ArgumentCaptor.forClass(AppointmentEntity.class);
         when(appointmentRepository.save(appointmentCaptor.capture())).thenAnswer(invocation -> {
-            Appointment savedAppointment = invocation.getArgument(0);
-            ReflectionTestUtils.setField(savedAppointment, "id", appointmentId);
-            return savedAppointment;
+            AppointmentEntity savedEntity = invocation.getArgument(0);
+            ReflectionTestUtils.setField(savedEntity, "id", appointmentId);
+            return savedEntity;
         });
 
         // Act
@@ -92,21 +90,21 @@ class AppointmentCommandServiceImplTest {
         // Assert
         assertEquals(appointmentId, result);
 
-        Appointment capturedAppointment = appointmentCaptor.getValue();
-        assertEquals(message, capturedAppointment.getMessage());
-        assertEquals(AppointmentStatus.PENDING, capturedAppointment.getStatus());
-        assertEquals(farmer, capturedAppointment.getFarmer());
-        assertEquals(availableDate, capturedAppointment.getAvailableDate());
-        assertEquals(expectedMeetingUrl, capturedAppointment.getMeetingUrl());
+        AppointmentEntity capturedAppointmentEntity = appointmentCaptor.getValue();
+        assertEquals(message, capturedAppointmentEntity.getMessage());
+        assertEquals(AppointmentStatus.PENDING, capturedAppointmentEntity.getStatus());
+        assertEquals(farmerId, capturedAppointmentEntity.getFarmer().getId());
+        assertEquals(availableDateId, capturedAppointmentEntity.getAvailableDate().getId());
+        assertEquals(expectedMeetingUrl, capturedAppointmentEntity.getMeetingUrl());
 
-        verify(appointmentRepository).save(any(Appointment.class));
+        verify(appointmentRepository).save(any(AppointmentEntity.class));
         verify(eventPublisher).publishEvent(argThat(event ->
                 event instanceof CreateNotificationByAppointmentCreated &&
                         ((CreateNotificationByAppointmentCreated) event).getFarmerId().equals(farmerId) &&
-                        ((CreateNotificationByAppointmentCreated) event).getAvailableDateId().equals(availableDateId)));
+                        ((CreateNotificationByAppointmentCreated) event).getAvailableDateId().equals(availableDateId)
+        ));
     }
 
-    // Creating appointment with non-existent available date
     @Test
     public void test_handle_create_appointment_command_with_nonexistent_available_date() {
         // Arrange

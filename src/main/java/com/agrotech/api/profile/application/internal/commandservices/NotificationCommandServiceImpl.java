@@ -2,6 +2,7 @@ package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.profile.application.internal.outboundservices.acl.ExternalUserService;
 import com.agrotech.api.profile.domain.exceptions.NotificationNotFoundException;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.NotificationMapper;
 import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.commands.CreateNotificationCommand;
 import com.agrotech.api.profile.domain.model.commands.DeleteNotificationCommand;
@@ -22,22 +23,18 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
 
     @Override
     public Long handle(CreateNotificationCommand command) {
-        var user = externalUserService.fetchUserById(command.userId());
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(command.userId());
-        }
-        var notification = new Notification(command, user.get());
-        notificationRepository.save(notification);
-        return notification.getId();
+        var user = externalUserService.fetchUserById(command.userId())
+                        .orElseThrow(() -> new UserNotFoundException(command.userId()));
+        var notification = new Notification(command, user);
+        var notificationEntity = notificationRepository.save(NotificationMapper.toEntity(notification));
+        return notificationEntity.getId();
     }
 
     @Override
     public void handle(DeleteNotificationCommand command) {
-        var notification = notificationRepository.findById(command.id());
-        if (notification.isEmpty()) {
-            throw new NotificationNotFoundException(command.id());
-        }
-        notificationRepository.delete(notification.get());
+        var notificationEntity = notificationRepository.findById(command.id())
+                .orElseThrow(() -> new NotificationNotFoundException(command.id()));
+        notificationRepository.delete(notificationEntity);
 
     }
 }

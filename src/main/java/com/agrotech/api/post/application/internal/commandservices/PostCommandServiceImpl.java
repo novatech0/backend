@@ -1,6 +1,8 @@
 package com.agrotech.api.post.application.internal.commandservices;
 
 import com.agrotech.api.post.application.internal.outboundservices.acl.ExternalProfileService;
+import com.agrotech.api.post.infrastructure.persistence.jpa.entities.PostEntity;
+import com.agrotech.api.post.infrastructure.persistence.jpa.mappers.PostMapper;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.post.domain.exceptions.PostNotFoundException;
 import com.agrotech.api.post.domain.model.aggregates.Post;
@@ -27,24 +29,25 @@ public class PostCommandServiceImpl implements PostCommandService {
     public Long handle(CreatePostCommand command) {
         var advisor = externalProfileService.fetchAdvisorById(command.advisorId())
                 .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
-        Post post = new Post(command, advisor);
-        Post postsave=postRepository.save(post);
-        return postsave.getId();
+        var post = new Post(command, advisor);
+        var postEntity = postRepository.save(PostMapper.toEntity(post));
+        return postEntity.getId();
     }
 
     @Override
     public Optional<Post> handle(UpdatePostCommand command) {
-        var post = postRepository.findById(command.id())
+        var postEntity = postRepository.findById(command.id())
                 .orElseThrow(() -> new PostNotFoundException(command.id()));
-        Post updatedPost = postRepository.save(post.update(command));
-        return Optional.of(updatedPost);
+        postEntity.update(command);
+        var updatedEntity = postRepository.save(postEntity);
+        return Optional.of(PostMapper.toDomain(updatedEntity));
     }
 
     @Override
     public void handle(DeletePostCommand command) {
-        var post = postRepository.findById(command.id())
+        var postEntity = postRepository.findById(command.id())
                 .orElseThrow(() -> new PostNotFoundException(command.id()));
-        postRepository.delete(post);
+        postRepository.delete(postEntity);
     }
 
 }

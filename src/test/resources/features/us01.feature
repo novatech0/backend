@@ -6,7 +6,7 @@ Feature: Visualización del catálogo de asesores
   Scenario: Explorar catálogo de asesores
     Given el granjero con poca experiencia quiere explorar el catálogo de asesores
     And se encuentra en la plataforma
-    When seleccione el botón relacionado con el "Catálogo de asesores"
+    When seleccione el botón relacionado con el "Asesores"
     Then el sistema le mostrará una lista de todos los asesores disponibles en la plataforma
 
   Scenario: Filtrar búsqueda de asesores

@@ -3,6 +3,7 @@ package com.agrotech.api.profile.application.internal.commandservices;
 import com.agrotech.api.profile.application.internal.outboundservices.acl.ExternalUserService;
 import com.agrotech.api.profile.domain.exceptions.ProfileNotFoundException;
 import com.agrotech.api.profile.domain.exceptions.UserAlreadyUsedException;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.ProfileMapper;
 import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.aggregates.Profile;
 import com.agrotech.api.profile.domain.model.commands.CreateProfileCommand;
@@ -26,34 +27,30 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
 
     @Override
     public Long handle(CreateProfileCommand command) {
-        var user = externalUserService.fetchUserById(command.userId());
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(command.userId());
-        }
-        var sameUser = profileRepository.findByUser_Id(command.userId());
-        if (sameUser.isPresent()) {
-            throw new UserAlreadyUsedException(command.userId());
-        }
-        Profile profile = new Profile(command, user.get());
-        profileRepository.save(profile);
-        return profile.getId();
+        var user = externalUserService.fetchUserById(command.userId())
+                .orElseThrow(() -> new UserNotFoundException(command.userId()));
+       profileRepository.findByUser_Id(command.userId())
+                .ifPresent(existingProfile -> {
+                    throw new UserAlreadyUsedException(command.userId());
+                });
+        var profile = new Profile(command, user);
+        var profileEntity = profileRepository.save(ProfileMapper.toEntity(profile));
+        return profileEntity.getId();
     }
 
     @Override
     public Optional<Profile> handle(UpdateProfileCommand command) {
-        var profile = profileRepository.findById(command.id());
-        if (profile.isEmpty()) return Optional.empty();
-        var profileToUpdate = profile.get();
-        Profile updatedProfile = profileRepository.save(profileToUpdate.update(command));
-        return Optional.of(updatedProfile);
+        var profileEntity = profileRepository.findById(command.id())
+                .orElseThrow(() -> new ProfileNotFoundException(command.id()));
+        profileEntity.update(command);
+        var updatedEntity = profileRepository.save(profileEntity);
+        return Optional.of(ProfileMapper.toDomain(updatedEntity));
     }
 
     @Override
     public void handle(DeleteProfileCommand command) {
-        var profile = profileRepository.findById(command.id());
-        if (profile.isEmpty()) {
-            throw new ProfileNotFoundException(command.id());
-        }
-        profileRepository.delete(profile.get());
+        var profileEntity = profileRepository.findById(command.id())
+                .orElseThrow(() -> new ProfileNotFoundException(command.id()));
+        profileRepository.delete(profileEntity);
     }
 }

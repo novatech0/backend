@@ -1,6 +1,7 @@
 package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.AdvisorMapper;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.profile.domain.exceptions.UserAlreadyUsedException;
 import com.agrotech.api.profile.domain.model.commands.CreateAdvisorCommand;
@@ -23,32 +24,28 @@ public class AdvisorCommandServiceImpl implements AdvisorCommandService {
 
     @Override
     public Long handle(CreateAdvisorCommand command, User user) {
-        var sameUser = advisorRepository.findByUser_Id(command.userId());
-        if (sameUser.isPresent()) {
-            throw new UserAlreadyUsedException(command.userId());
-        }
-        Advisor advisor = new Advisor(user);
-        advisorRepository.save(advisor);
-        return advisor.getId();
+        advisorRepository.findByUser_Id(command.userId())
+                .ifPresent(existingAdvisor -> {
+                    throw new UserAlreadyUsedException(command.userId());
+                });
+        var advisor = new Advisor(user);
+        var advisorEntity = advisorRepository.save(AdvisorMapper.toEntity(advisor));
+        return advisorEntity.getId();
     }
 
     @Override
     public Optional<Advisor> handle(UpdateAdvisorCommand command) {
-        var advisor = advisorRepository.findById(command.id());
-        if (advisor.isEmpty()) {
-            return Optional.empty();
-        }
-        var advisorToUpdate = advisor.get();
-        Advisor updatedAdvisor = advisorRepository.save(advisorToUpdate.update(command));
-        return Optional.of(updatedAdvisor);
+        var advisorEntity = advisorRepository.findById(command.id())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.id()));
+        var advisor = AdvisorMapper.toDomain(advisorEntity).update(command);
+        var updatedEntity = advisorRepository.save(AdvisorMapper.toEntity(advisor));
+        return Optional.of(AdvisorMapper.toDomain(updatedEntity));
     }
 
     @Override
     public void handle(DeleteAdvisorCommand command) {
-        var advisor = advisorRepository.findById(command.id());
-        if (advisor.isEmpty()) {
-            throw new AdvisorNotFoundException(command.id());
-        }
-        advisorRepository.delete(advisor.get());
+        var advisorEntity = advisorRepository.findById(command.id())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.id()));
+        advisorRepository.delete(advisorEntity);
     }
 }

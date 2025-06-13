@@ -8,8 +8,10 @@ import static org.mockito.Mockito.when;
 import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateAnimalCommand;
 import com.agrotech.api.management.domain.model.entities.Animal;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.AnimalRepository;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.entities.AnimalEntity;
+import com.agrotech.api.management.infrastructure.persistence.jpa.entities.EnclosureEntity;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.AnimalRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -30,6 +32,7 @@ class AnimalCommandServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     // Successfully create a new animal with valid CreateAnimalCommand and existing enclosure
     @Test
     public void test_handle_create_animal_command_with_valid_data_returns_animal_id() {
@@ -48,20 +51,24 @@ class AnimalCommandServiceImplTest {
                 enclosureId
         );
 
-        Enclosure mockEnclosure = Mockito.mock(Enclosure.class);
-        Animal mockAnimal = Mockito.mock(Animal.class);
+        // Crea un EnclosureEntity (no Enclosure)
+        EnclosureEntity mockEnclosureEntity = new EnclosureEntity();
+        mockEnclosureEntity.setId(enclosureId);
 
-        when(enclosureRepository.findById(enclosureId)).thenReturn(Optional.of(mockEnclosure));
-        when(mockAnimal.getId()).thenReturn(expectedAnimalId);
+        // Crea un AnimalEntity simulado con ID
+        AnimalEntity savedAnimalEntity = new AnimalEntity();
+        savedAnimalEntity.setId(expectedAnimalId);
 
-        when(animalRepository.save(any(Animal.class))).thenReturn(mockAnimal);
+        // Configura mocks correctamente
+        when(enclosureRepository.findById(enclosureId)).thenReturn(Optional.of(mockEnclosureEntity));
+        when(animalRepository.save(any(AnimalEntity.class))).thenReturn(savedAnimalEntity);
 
         // Act
         Long actualAnimalId = animalCommandService.handle(command);
 
         // Assert
         assertEquals(expectedAnimalId, actualAnimalId);
-        verify(animalRepository).save(any(Animal.class));
+        verify(animalRepository).save(any(AnimalEntity.class));
         verify(enclosureRepository).findById(enclosureId);
     }
 }

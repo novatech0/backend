@@ -1,58 +1,65 @@
 package com.agrotech.api.management.application.internal.commandservices;
-import com.agrotech.api.management.domain.model.aggregates.Enclosure;
 import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
-import com.agrotech.api.profile.domain.model.entities.Farmer;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.repositories.FarmerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Optional;
+import static org.mockito.Mockito.*;
+import com.agrotech.api.management.infrastructure.persistence.jpa.entities.EnclosureEntity;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
+
 class EnclosureCommandServiceImplTest {
+
     @Mock
-    private  EnclosureRepository enclosureRepository;
+    private EnclosureRepository enclosureRepository;
+
     @Mock
-    private  FarmerRepository farmerRepository;
+    private FarmerRepository farmerRepository;
+
     @InjectMocks
-    private  EnclosureCommandServiceImpl enclosureCommandService;
+    private EnclosureCommandServiceImpl enclosureCommandService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     // Creating an enclosure with valid data returns the enclosure ID
     @Test
     public void test_handle_create_enclosure_command_returns_enclosure_id() {
         // Arrange
         Long farmerId = 1L;
-        Long enclosureId = 1L;
+        Long expectedEnclosureId = 100L;
         String name = "Cattle Pen";
         Integer capacity = 50;
         String type = "Cattle";
 
         CreateEnclosureCommand command = new CreateEnclosureCommand(name, capacity, type, farmerId);
 
-        Farmer farmer = Mockito.mock(Farmer.class);
-        Enclosure enclosure = Mockito.mock(Enclosure.class);
+        // Mock farmer entity
+        FarmerEntity farmerEntity = mock(FarmerEntity.class);
+        when(farmerRepository.findById(farmerId)).thenReturn(Optional.of(farmerEntity));
 
-        when(farmerRepository.findById(farmerId)).thenReturn(Optional.of(farmer));
-        when(enclosure.getId()).thenReturn(enclosureId);
-        when(enclosureRepository.save(any(Enclosure.class))).thenReturn(enclosure);
+        // Mock saved enclosure entity with an ID
+        EnclosureEntity savedEnclosure = mock(EnclosureEntity.class);
+        when(savedEnclosure.getId()).thenReturn(expectedEnclosureId);
+
+        // When saving, return the saved enclosure
+        when(enclosureRepository.save(any(EnclosureEntity.class))).thenReturn(savedEnclosure);
 
         // Act
         Long result = enclosureCommandService.handle(command);
 
         // Assert
-        assertEquals(enclosureId, result);
-        Mockito.verify(farmerRepository).findById(farmerId);
-        Mockito.verify(enclosureRepository).save(Mockito.any(Enclosure.class));
-
+        assertEquals(expectedEnclosureId, result);
+        verify(farmerRepository).findById(farmerId);
+        verify(enclosureRepository).save(any(EnclosureEntity.class));
     }
 }

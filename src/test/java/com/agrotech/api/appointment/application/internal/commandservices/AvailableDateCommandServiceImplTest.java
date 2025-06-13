@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.model.commands.CreateAvailableDateCommand;
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.entities.AvailableDateEntity;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.AvailableDateRepository;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +51,6 @@ class AvailableDateCommandServiceImplTest {
 
         assertEquals("Advisor with id " + advisorId + " not found", exception.getMessage());
         verify(externalProfilesService).fetchAdvisorById(advisorId);
-        verify(availableDateRepository, never()).save(any(AvailableDate.class));
+        verify(availableDateRepository, never()).save(any(AvailableDateEntity.class));
     }
 }

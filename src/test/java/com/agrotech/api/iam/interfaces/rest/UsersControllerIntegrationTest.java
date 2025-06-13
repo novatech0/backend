@@ -6,9 +6,6 @@ import com.agrotech.api.iam.domain.model.commands.SignInCommand;
 import com.agrotech.api.iam.domain.model.commands.SignUpCommand;
 import com.agrotech.api.iam.domain.model.entities.Role;
 import com.agrotech.api.iam.domain.services.UserCommandService;
-import com.agrotech.api.iam.domain.services.UserQueryService;
-import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -40,18 +37,12 @@ class UsersControllerIntegrationTest {
     private Long userId;
 
     @BeforeEach
-    void setup() {
+    void setup() throws Throwable { // fail es un Throwable
         // Assert
-
-        // Create a test user
-        User user = userCommandService.handle(
-                new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole()))
-        ).orElseThrow();
-        // Get token
-        this.token = userCommandService.handle(
-                new SignInCommand("testuser@example.com", "password")
-        ).orElseThrow().getRight();
-
+        User user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())))
+                .orElseThrow(() -> fail("User creation failed"));
+        this.token = userCommandService.handle(new SignInCommand("testuser@example.com", "password"))
+                .orElseThrow(() -> fail("User sign-in failed")).getRight();
         this.userId = user.getId();
     }
 

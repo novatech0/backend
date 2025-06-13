@@ -1,6 +1,7 @@
 package com.agrotech.api.profile.application.internal.commandservices;
 
 import com.agrotech.api.iam.domain.model.aggregates.User;
+import com.agrotech.api.profile.infrastructure.persistence.jpa.mappers.FarmerMapper;
 import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
 import com.agrotech.api.shared.domain.exceptions.UserNotFoundException;
 import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
@@ -21,20 +22,16 @@ public class FarmerCommandServiceImpl implements FarmerCommandService {
     @Override
     public Long handle(CreateFarmerCommand command, User user) {
         var sameUser = farmerRepository.findByUser_Id(command.userId());
-        if (sameUser.isPresent()) {
-            throw new UserNotFoundException(command.userId());
-        }
-        var farmer = new Farmer(command, user);
-        farmerRepository.save(farmer);
-        return farmer.getId();
+        if (sameUser.isPresent()) throw new UserNotFoundException(command.userId());
+        var farmer = new Farmer(user);
+        var farmerEntity = farmerRepository.save(FarmerMapper.toEntity(farmer));
+        return farmerEntity.getId();
     }
 
     @Override
     public void handle(DeleteFarmerCommand command) {
-        var farmer = farmerRepository.findById(command.id());
-        if (farmer.isEmpty()) {
-            throw new FarmerNotFoundException(command.id());
-        }
-        farmerRepository.delete(farmer.get());
+        var farmerEntity = farmerRepository.findById(command.id())
+                .orElseThrow(() -> new FarmerNotFoundException(command.id()));
+        farmerRepository.delete(farmerEntity);
     }
 }

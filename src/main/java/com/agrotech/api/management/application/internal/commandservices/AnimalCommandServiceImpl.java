@@ -8,8 +8,10 @@ import com.agrotech.api.management.domain.model.commands.DeleteAnimalCommand;
 import com.agrotech.api.management.domain.model.commands.UpdateAnimalCommand;
 import com.agrotech.api.management.domain.model.entities.Animal;
 import com.agrotech.api.management.domain.services.AnimalCommandService;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.AnimalRepository;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.AnimalMapper;
+import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.EnclosureMapper;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.AnimalRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -26,31 +28,27 @@ public class AnimalCommandServiceImpl implements AnimalCommandService {
 
     @Override
     public Long handle(CreateAnimalCommand command) {
-        var enclosure = enclosureRepository.findById(command.enclosureId());
-        if (enclosure.isEmpty()) throw new EnclosureNotFoundException(command.enclosureId());
-
-        Animal animal = new Animal(command, enclosure.get());
-        Animal animalsave = animalRepository.save(animal);
-        return animalsave.getId();
+        var enclosure = enclosureRepository.findById(command.enclosureId())
+                .orElseThrow(() -> new EnclosureNotFoundException(command.enclosureId()));
+        var animal = Animal.create(command, EnclosureMapper.toDomain(enclosure));
+        var animalEntity = animalRepository.save(AnimalMapper.toEntity(animal));
+        return animalEntity.getId();
     }
 
     @Override
     public Optional<Animal> handle(UpdateAnimalCommand command) {
-        var animal = animalRepository.findById(command.animalId());
-        if (animal.isEmpty()) return Optional.empty();
-        if (command.health() != null  &&  !command.health().matches("^(?i)(HEALTHY|SICK|DEAD|UNKNOWN)$")) {
-            throw new IncorrectHealthStatusException(command.health());
-        }
-
-        var animalToUpdate = animal.get();
-        Animal updatedAnimal = animalRepository.save(animalToUpdate.update(command));
-        return Optional.of(updatedAnimal);
+        var animalEntity = animalRepository.findById(command.animalId())
+                .orElseThrow(() -> new AnimalNotFoundException(command.animalId()));
+        if (command.health() != null) Animal.validateHealthStatus(command.health());
+        animalEntity.update(command);
+        animalRepository.save(animalEntity);
+        return Optional.of(AnimalMapper.toDomain(animalEntity));
     }
 
     @Override
     public void handle(DeleteAnimalCommand command) {
-        var animal = animalRepository.findById(command.animalId());
-        if (animal.isEmpty()) throw new AnimalNotFoundException(command.animalId());
-        animalRepository.delete(animal.get());
+        var animalEntity = animalRepository.findById(command.animalId())
+                .orElseThrow(() -> new AnimalNotFoundException(command.animalId()));
+        animalRepository.delete(animalEntity);
     }
 }

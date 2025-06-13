@@ -7,6 +7,8 @@ import com.agrotech.api.appointment.domain.model.commands.DeleteReviewCommand;
 import com.agrotech.api.appointment.domain.model.commands.UpdateReviewCommand;
 import com.agrotech.api.appointment.domain.model.entities.Review;
 import com.agrotech.api.appointment.domain.services.ReviewCommandService;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.entities.ReviewEntity;
+import com.agrotech.api.appointment.infrastructure.persistence.jpa.mappers.ReviewMapper;
 import com.agrotech.api.appointment.infrastructure.persistence.jpa.repositories.ReviewRepository;
 import com.agrotech.api.shared.domain.exceptions.AdvisorNotFoundException;
 import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
@@ -28,34 +30,35 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
 
     @Override
     public Long handle(CreateReviewCommand command) {
-        var advisor = externalProfilesService.fetchAdvisorById(command.advisorId());
-        var farmer = externalProfilesService.fetchFarmerById(command.farmerId());
-        var existingReview = reviewRepository.findByAdvisor_IdAndFarmer_Id(command.advisorId(), command.farmerId());
-        if (existingReview.isPresent()) throw new ReviewAlreadyExistsException(command.advisorId(), command.farmerId());
-        if (advisor.isEmpty()) throw new AdvisorNotFoundException(command.advisorId());
-        if (farmer.isEmpty()) throw new FarmerNotFoundException(command.farmerId());
+        var advisor = externalProfilesService.fetchAdvisorById(command.advisorId())
+                .orElseThrow(() -> new AdvisorNotFoundException(command.advisorId()));
+        var farmer = externalProfilesService.fetchFarmerById(command.farmerId())
+                .orElseThrow(() -> new FarmerNotFoundException(command.farmerId()));
+        reviewRepository.findByAdvisor_IdAndFarmer_Id(command.advisorId(), command.farmerId())
+                .ifPresent(existingReview -> { throw new ReviewAlreadyExistsException(command.advisorId(), command.farmerId()); });
         if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
-        Review review = new Review(command, advisor.get(), farmer.get());
-        Review savedReview = reviewRepository.save(review);        updateAdvisorRating(command.advisorId());
-        return savedReview.getId();
+        var review = Review.create(command, advisor, farmer);
+        var reviewEntity = reviewRepository.save(ReviewMapper.toEntity(review));
+        updateAdvisorRating(command.advisorId());
+        return reviewEntity.getId();
     }
 
     @Override
     public Optional<Review> handle(UpdateReviewCommand command) {
-        var review = reviewRepository.findById(command.id());
-        if (review.isEmpty()) return Optional.empty();
-        if(command.rating() < 0 || command.rating() > 5) throw new InvalidRatingException(command.rating());
-        var reviewToUpdate = review.get();
-        reviewRepository.save(reviewToUpdate.update(command));
-        updateAdvisorRating(review.get().getAdvisorId());
-        return Optional.of(reviewToUpdate);
+        var reviewEntity = reviewRepository.findById(command.id())
+                .orElseThrow(() -> new ReviewNotFoundException(command.id()));
+        Review.validateRating(command.rating());
+        reviewEntity.update(command);
+        reviewRepository.save(reviewEntity);
+        updateAdvisorRating(reviewEntity.getAdvisor().getId());
+        return Optional.of(ReviewMapper.toDomain(reviewEntity));
     }
 
     @Override
     public void handle(DeleteReviewCommand command) {
-        var review = reviewRepository.findById(command.id());
-        if (review.isEmpty()) throw new ReviewNotFoundException(command.id());
-        reviewRepository.delete(review.get());
+        var review = reviewRepository.findById(command.id())
+                .orElseThrow(() -> new ReviewNotFoundException(command.id()));
+        reviewRepository.delete(review);
     }
 
     private void updateAdvisorRating(Long advisorId) {
@@ -64,7 +67,7 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
 
         BigDecimal totalRating = BigDecimal.ZERO;
 
-        for (Review review : reviews) {
+        for (ReviewEntity review : reviews) {
             totalRating = totalRating.add(BigDecimal.valueOf(review.getRating()));
         }
 

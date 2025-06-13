@@ -5,11 +5,13 @@ import com.agrotech.api.management.domain.model.queries.GetAllEnclosuresByFarmer
 import com.agrotech.api.management.domain.model.queries.GetAllEnclosuresQuery;
 import com.agrotech.api.management.domain.model.queries.GetEnclosureByIdQuery;
 import com.agrotech.api.management.domain.services.EnclosureQueryService;
-import com.agrotech.api.management.infrastructure.persitence.jpa.repositories.EnclosureRepository;
+import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.EnclosureMapper;
+import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.EnclosureRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EnclosureQueryServiceImpl implements EnclosureQueryService {
@@ -21,16 +23,23 @@ public class EnclosureQueryServiceImpl implements EnclosureQueryService {
 
     @Override
     public List<Enclosure> handle(GetAllEnclosuresQuery query) {
-        return this.enclosureRepository.findAll();
+        return this.enclosureRepository.findAll()
+                .stream()
+                .map(EnclosureMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Enclosure> handle(GetEnclosureByIdQuery query) {
-        return this.enclosureRepository.findById(query.enclosureId());
+        return this.enclosureRepository.findById(query.enclosureId())
+                .map(EnclosureMapper::toDomain);
     }
 
     @Override
     public List<Enclosure> handle(GetAllEnclosuresByFarmerIdQuery query) {
-        return this.enclosureRepository.findAllByFarmer_Id(query.farmerId());
+        return this.enclosureRepository.findAllByFarmer_Id(query.farmerId())
+                .stream()
+                .map(EnclosureMapper::toDomain)
+                .collect(Collectors.toList());
     }
 }
