@@ -1,0 +1,50 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: ci
+
+    env:
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+      MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '22'
+
+      - name: Cache de dependencias Maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Descargar dependencias
+        run: mvn dependency:go-offline
+
+      - name: Verificar conexión a la base de datos remota
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; SHOW TABLES;"
+
+      - name: Build y Tests
+        run: mvn -B clean verify
