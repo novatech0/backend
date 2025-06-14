@@ -6,6 +6,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: deploy
+
     steps:
       - name: Hacer deploy de la imagen en Render
         env:

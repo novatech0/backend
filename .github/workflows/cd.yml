@@ -8,6 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: cd
 
     env:
       DOCKER_IMAGE: pierod04/agrotech-backend
@@ -41,12 +42,9 @@ jobs:
 
       - name: Verificar conexión a la base de datos remota
         run: |
-          echo "Host: $MYSQL_HOST"
-          echo "Puerto: $MYSQL_PORT"
-          echo "Usuario: $MYSQL_USER"
           sudo apt-get update
           sudo apt-get install -y mysql-client
-          mysql --host="$MYSQL_HOST" --port="$MYSQL_PORT" --user="$MYSQL_USER" --password="$MYSQL_PASSWORD" -e "USE $MYSQL_DATABASE; SHOW TABLES;"
+          mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; SHOW TABLES;"
 
       - name: Compilar proyecto con tests
         run: mvn -B clean package -DskipTests=false
