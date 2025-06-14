@@ -1,4 +1,4 @@
-name: Continuous Delivery (CD)
+name: Continuous Delivery & Deployment (CD)
 
 on:
   push:
@@ -60,9 +60,8 @@ jobs:
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           docker push $DOCKER_IMAGE
 
-      - name: Llamar a Continous Deployment
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: deploy.yml
+      - name: Realizar despliegue en Render
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          curl -X POST $DEPLOY_HOOK_URL
