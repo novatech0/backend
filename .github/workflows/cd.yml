@@ -1,4 +1,4 @@
-name: Continous Delivery (CD)
+name: Continuous Delivery (CD)
 
 on:
   push:
@@ -19,23 +19,34 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
-      - name: Checkout del código
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Configurar JDK 22
+      - name: Configurar Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'oracle'
+          distribution: 'temurin'
           java-version: '22'
 
-      - name: Verificar entorno
+      - name: Cache de dependencias Maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Descargar dependencias
+        run: mvn dependency:go-offline
+
+      - name: Verificar conexión a la base de datos remota
         run: |
-          java -version
-          mvn -v
-          docker --version
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER -p$MYSQL_PASSWORD -e "USE $MYSQL_DATABASE; SHOW TABLES;"
 
       - name: Compilar proyecto con tests
-        run: mvn clean package -DskipTests=false
+        run: mvn -B clean package -DskipTests=false
 
       - name: Construir imagen Docker
         run: docker build -t $DOCKER_IMAGE .
@@ -47,7 +58,6 @@ jobs:
         run: |
           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           docker push $DOCKER_IMAGE
-          
 
       - name: Llamar a Continous Deployment
         uses: benc-uk/workflow-dispatch@v1
