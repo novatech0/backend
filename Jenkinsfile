@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    jdk 'jdk-22'
+  }
+
   environment {
     DOCKER_IMAGE = 'pierod04/agrotech-backend'
   }
