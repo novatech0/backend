@@ -80,15 +80,19 @@ class AppointmentsControllerIntegrationTest {
 
         // Crear Farmer
         this.farmerId = farmerCommandService.handle(new CreateFarmerCommand(user.getId()), user);
-        farmerQueryService.handle(new GetFarmerByIdQuery(farmerId))
+        Farmer farmer = farmerQueryService.handle(new GetFarmerByIdQuery(farmerId))
                 .orElseThrow(() -> fail("Farmer creation failed"));
 
         // Crear Advisor
         Long advisorId = advisorCommandService.handle(new CreateAdvisorCommand(user.getId()), user);
+        advisorCommandService.handle(new CreateAdvisorCommand(user.getId()), user);
 
         // Crear AvailableDate
         LocalDate scheduledDate = LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE);
         this.availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, scheduledDate, "10:00", "11:00"));
+
+        // Crear Appointment directamente
+        availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, scheduledDate, "10:00", "11:00"));
     }
 
     @Test
