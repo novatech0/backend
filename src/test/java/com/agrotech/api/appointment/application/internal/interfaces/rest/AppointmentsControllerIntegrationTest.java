@@ -7,6 +7,7 @@ import com.agrotech.api.iam.domain.model.commands.SignInCommand;
 import com.agrotech.api.iam.domain.model.commands.SignUpCommand;
 import com.agrotech.api.iam.domain.model.entities.Role;
 import com.agrotech.api.iam.domain.services.UserCommandService;
+import com.agrotech.api.profile.domain.model.aggregates.Profile;
 import com.agrotech.api.profile.domain.model.commands.CreateAdvisorCommand;
 import com.agrotech.api.profile.domain.model.commands.CreateFarmerCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
@@ -71,28 +72,35 @@ class AppointmentsControllerIntegrationTest {
 
     @BeforeEach
     void setup() throws Throwable {
-        // Crear usuario y obtener token
-        User user = userCommandService.handle(new SignUpCommand("testuser@example.com", "password", List.of(Role.getDefaultRole())))
+        // Crear usuario para Farmer
+        User farmerUser = userCommandService.handle(new SignUpCommand("farmer@example.com", "password", List.of(Role.getDefaultRole())))
                 .orElseThrow(() -> fail("User creation failed"));
-        ImmutablePair<User, String> signInResult = userCommandService.handle(new SignInCommand("testuser@example.com", "password"))
+        ImmutablePair<User, String> farmerSignInResult = userCommandService.handle(new SignInCommand("farmer@example.com", "password"))
                 .orElseThrow(() -> fail("User sign-in failed"));
-        this.token = signInResult.getRight();
+        this.token = farmerSignInResult.getRight();
 
         // Crear Farmer
-        this.farmerId = farmerCommandService.handle(new CreateFarmerCommand(user.getId()), user);
-        Farmer farmer = farmerQueryService.handle(new GetFarmerByIdQuery(farmerId))
-                .orElseThrow(() -> fail("Farmer creation failed"));
+        this.farmerId = farmerCommandService.handle(new CreateFarmerCommand(farmerUser.getId()), farmerUser);
+
+        // Validar que el Farmer fue creado
+        farmerQueryService.handle(new GetFarmerByIdQuery(farmerId))
+                .orElseThrow(() -> fail("Farmer not found after creation"));
+
+        // Crear usuario para Advisor
+        User advisorUser = userCommandService.handle(new SignUpCommand("advisor@example.com", "password", List.of(Role.getDefaultRole())))
+                .orElseThrow(() -> fail("User creation failed"));
 
         // Crear Advisor
-        Long advisorId = advisorCommandService.handle(new CreateAdvisorCommand(user.getId()), user);
-        advisorCommandService.handle(new CreateAdvisorCommand(user.getId()), user);
+        Long advisorId = advisorCommandService.handle(new CreateAdvisorCommand(advisorUser.getId()), advisorUser);
 
         // Crear AvailableDate
         LocalDate scheduledDate = LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE);
         this.availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, scheduledDate, "10:00", "11:00"));
 
-        // Crear Appointment directamente
-        availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, scheduledDate, "10:00", "11:00"));
+        // Validar que el AvailableDate fue creado
+        if (this.availableDateId == null) {
+            fail("AvailableDate creation failed");
+        }
     }
 
     @Test
