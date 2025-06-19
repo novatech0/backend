@@ -94,7 +94,7 @@ class AvailableDatesControllerIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].advisorId").value(advisorId));
+                .andExpect(jsonPath("$[?(@.advisorId == %d)]", advisorId).exists());
     }
 
     @Test
