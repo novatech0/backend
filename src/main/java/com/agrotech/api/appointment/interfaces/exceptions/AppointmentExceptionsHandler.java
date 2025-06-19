@@ -74,4 +74,10 @@ public class AppointmentExceptionsHandler {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO("Invalid Available Date", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ProfileNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleProfileNotFoundException(ProfileNotFoundException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Profile Not Found", "Profile not found when creating notification for appointment.");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
 }

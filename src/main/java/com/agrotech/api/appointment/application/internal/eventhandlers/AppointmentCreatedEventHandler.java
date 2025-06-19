@@ -3,11 +3,13 @@ package com.agrotech.api.appointment.application.internal.eventhandlers;
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalNotificationsService;
 import com.agrotech.api.appointment.application.internal.outboundservices.acl.ExternalProfilesService;
 import com.agrotech.api.appointment.domain.exceptions.AvailableDateNotFoundException;
+import com.agrotech.api.appointment.domain.exceptions.ProfileNotFoundException;
 import com.agrotech.api.appointment.domain.model.commands.UpdateAvailableDateStatusCommand;
 import com.agrotech.api.appointment.domain.model.events.CreateNotificationByAppointmentCreated;
 import com.agrotech.api.appointment.domain.model.queries.GetAvailableDateByIdQuery;
 import com.agrotech.api.appointment.domain.services.AvailableDateCommandService;
 import com.agrotech.api.appointment.domain.services.AvailableDateQueryService;
+import com.agrotech.api.shared.domain.exceptions.FarmerNotFoundException;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,10 +44,10 @@ public class AppointmentCreatedEventHandler {
 
         availableDateCommandService.handle(new UpdateAvailableDateStatusCommand(event.getAvailableDateId(),"UNAVAILABLE"));
 
-        var farmer = externalProfilesService.fetchFarmerById(event.getFarmerId()).orElseThrow();
-        var advisor = externalProfilesService.fetchAdvisorById(availableDate.getAdvisorId()).orElseThrow();
-        var profileFarmer = externalProfilesService.fetchProfileByFarmerId(event.getFarmerId()).orElseThrow();
-        var profileAdvisor = externalProfilesService.fetchProfileByAdvisorId(availableDate.getAdvisorId()).orElseThrow();
+        var farmer = externalProfilesService.fetchFarmerById(event.getFarmerId()).orElseThrow(() -> new FarmerNotFoundException(event.getFarmerId()));
+        var advisor = externalProfilesService.fetchAdvisorById(availableDate.getAdvisorId()).orElseThrow(() -> new AvailableDateNotFoundException(availableDate.getAdvisorId()));
+        var profileFarmer = externalProfilesService.fetchProfileByFarmerId(event.getFarmerId()).orElseThrow(ProfileNotFoundException::new);
+        var profileAdvisor = externalProfilesService.fetchProfileByAdvisorId(availableDate.getAdvisorId()).orElseThrow(ProfileNotFoundException::new);
 
         var meetingUrl = "https://meet.jit.si/agrotechMeeting" + event.getFarmerId() + "-" + availableDate.getAdvisorId();
 

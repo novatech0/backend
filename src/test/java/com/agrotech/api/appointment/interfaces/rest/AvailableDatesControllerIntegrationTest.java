@@ -1,4 +1,4 @@
-package com.agrotech.api.appointment.application.internal.interfaces.rest;
+package com.agrotech.api.appointment.interfaces.rest;
 
 import com.agrotech.api.AgrotechApplication;
 import com.agrotech.api.appointment.interfaces.rest.resources.UpdateAvailableDateResource;
