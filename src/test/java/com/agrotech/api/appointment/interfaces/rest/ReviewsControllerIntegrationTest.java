@@ -101,7 +101,7 @@ class ReviewsControllerIntegrationTest {
     @Test
     void postReview() throws Exception {
         // Crear recurso para Review con el advisorId correcto
-        CreateReviewResource resource = new CreateReviewResource(farmerId, advisorId, "Excelente servicio", 5);
+        CreateReviewResource resource = new CreateReviewResource(advisorId, farmerId, "Excelente servicio", 5);
 
         // Realizar solicitud POST
         mockMvc.perform(post("/api/v1/reviews")
@@ -109,8 +109,8 @@ class ReviewsControllerIntegrationTest {
                         .header("Authorization", "Bearer " + token)
                         .content(objectMapper.writeValueAsString(resource)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.farmerId").value(farmerId))
                 .andExpect(jsonPath("$.advisorId").value(advisorId))
+                .andExpect(jsonPath("$.farmerId").value(farmerId))
                 .andExpect(jsonPath("$.rating").value(5))
                 .andExpect(jsonPath("$.comment").value("Excelente servicio"));
     }
@@ -118,7 +118,7 @@ class ReviewsControllerIntegrationTest {
     @Test
     void getReviews() throws Exception {
         // Crear una Review
-        CreateReviewResource resource = new CreateReviewResource(farmerId, advisorId, "Buen servicio", 5);
+        CreateReviewResource resource = new CreateReviewResource(advisorId, farmerId, "Buen servicio", 5);
         mockMvc.perform(post("/api/v1/reviews")
                         .contentType("application/json")
                         .header("Authorization", "Bearer " + token)
@@ -137,7 +137,7 @@ class ReviewsControllerIntegrationTest {
     @Test
     void getReviewById() throws Exception {
         // Crear una Review
-        CreateReviewResource resource = new CreateReviewResource(farmerId, advisorId, "Servicio aceptable", 3);
+        CreateReviewResource resource = new CreateReviewResource(advisorId, farmerId, "Servicio aceptable", 3);
         String response = mockMvc.perform(post("/api/v1/reviews")
                         .contentType("application/json")
                         .header("Authorization", "Bearer " + token)
@@ -157,7 +157,7 @@ class ReviewsControllerIntegrationTest {
     @Test
     void updateReview() throws Exception {
         // Crear una Review
-        CreateReviewResource resource = new CreateReviewResource(farmerId, advisorId, "Servicio regular", 2);
+        CreateReviewResource resource = new CreateReviewResource(advisorId, farmerId, "Servicio regular", 2);
         String response = mockMvc.perform(post("/api/v1/reviews")
                         .contentType("application/json")
                         .header("Authorization", "Bearer " + token)
@@ -183,7 +183,7 @@ class ReviewsControllerIntegrationTest {
     @Test
     void deleteReview() throws Exception {
         // Crear una Review
-        CreateReviewResource resource = new CreateReviewResource(farmerId, advisorId, "Mala experiencia", 5);
+        CreateReviewResource resource = new CreateReviewResource(advisorId, farmerId, "Mala experiencia", 5);
         String response = mockMvc.perform(post("/api/v1/reviews")
                         .contentType("application/json")
                         .header("Authorization", "Bearer " + token)
