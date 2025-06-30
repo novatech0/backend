@@ -13,32 +13,27 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MYSQL_USER: ci_user
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 12345678
+          MYSQL_DATABASE: agrotech_test
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
+      - name: Checkout MySQL
+        run: mysql -h 127.0.0.1 --port 3306 -u root -p12345678 -e 'CREATE DATABASE IF NOT EXISTS agrotech_test;'
 
       - name: Configurar Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '22'
-
-      - name: Configurar MySQL con base de datos y usuario
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-server
-          sudo systemctl start mysql
-
-          # Ejecutar comandos SQL directamente como root del sistema
-          sudo mysql <<EOF
-          CREATE DATABASE IF NOT EXISTS agrotech_test;
-          CREATE USER IF NOT EXISTS 'ci_user'@'localhost' IDENTIFIED BY '12345678';
-          GRANT ALL PRIVILEGES ON agrotech_test.* TO 'ci_user'@'localhost';
-          FLUSH PRIVILEGES;
-          EOF
-
-          # Verificar conexión con el nuevo usuario
-          mysql -uci_user -p12345678 -e "SHOW DATABASES;"
 
       - name: Cache de dependencias Maven
         uses: actions/cache@v3
