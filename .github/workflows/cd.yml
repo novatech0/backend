@@ -26,6 +26,7 @@ jobs:
 
     env:
       DOCKER_IMAGE: pierod04/agrotech-backend
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
