@@ -70,7 +70,7 @@ class AvailableDatesControllerIntegrationTest {
     @Test
     void postAvailableDate() throws Exception {
         // Crear recurso para AvailableDate
-        var resource = new CreateAvailableDateCommand(advisorId, LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00");
+        var resource = new CreateAvailableDateCommand(advisorId, LocalDate.parse("2028-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00");
 
         // Realizar solicitud POST
         mockMvc.perform(post("/api/v1/available_dates")
@@ -79,7 +79,7 @@ class AvailableDatesControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(resource)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.advisorId").value(advisorId))
-                .andExpect(jsonPath("$.scheduledDate").value("2025-06-20"))
+                .andExpect(jsonPath("$.scheduledDate").value("2028-06-20"))
                 .andExpect(jsonPath("$.startTime").value("10:00"))
                 .andExpect(jsonPath("$.endTime").value("11:00"));
     }
@@ -87,7 +87,7 @@ class AvailableDatesControllerIntegrationTest {
     @Test
     void getAvailableDates() throws Exception {
         // Crear AvailableDate
-        availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
+        availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2028-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
 
         // Realizar solicitud GET
         mockMvc.perform(get("/api/v1/available_dates")
@@ -100,7 +100,7 @@ class AvailableDatesControllerIntegrationTest {
     @Test
     void getAvailableDateById() throws Exception {
         // Crear AvailableDate
-        Long availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
+        Long availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2028-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
 
         // Realizar solicitud GET por ID
         mockMvc.perform(get("/api/v1/available_dates/" + availableDateId)
@@ -112,10 +112,10 @@ class AvailableDatesControllerIntegrationTest {
     @Test
     void updateAvailableDate() throws Exception {
         // Crear AvailableDate
-        Long availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
+        Long availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2028-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
 
         // Crear recurso de actualización
-        var updateResource = new UpdateAvailableDateResource(LocalDate.parse("2025-06-20"), "11:00", "12:00");
+        var updateResource = new UpdateAvailableDateResource(LocalDate.parse("2028-06-20"), "11:00", "12:00");
 
         // Realizar solicitud PUT
         mockMvc.perform(put("/api/v1/available_dates/" + availableDateId)
@@ -130,7 +130,7 @@ class AvailableDatesControllerIntegrationTest {
     @Test
     void deleteAvailableDate() throws Exception {
         // Crear AvailableDate
-        Long availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2025-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
+        Long availableDateId = availableDateCommandService.handle(new CreateAvailableDateCommand(advisorId, LocalDate.parse("2028-06-20", DateTimeFormatter.ISO_LOCAL_DATE), "10:00", "11:00"));
 
         // Realizar solicitud DELETE
         mockMvc.perform(delete("/api/v1/available_dates/" + availableDateId)
