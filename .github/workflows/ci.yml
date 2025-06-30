@@ -11,6 +11,7 @@ jobs:
 
     env:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MYSQL_USER: ci_user
 
     steps:
       - name: Checkout código
@@ -22,33 +23,20 @@ jobs:
           distribution: 'temurin'
           java-version: '22'
 
-      - name: Configurar MySQL con base de datos
+      - name: Configurar MySQL con base de datos y usuario
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-server
           sudo systemctl start mysql
 
-          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;"
-          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '12345678';"
+          # Crear base de datos y usuario con permisos
+          sudo mysql -e "CREATE DATABASE IF NOT EXISTS agrotech_test;"
+          sudo mysql -e "CREATE USER IF NOT EXISTS 'ci_user'@'localhost' IDENTIFIED BY '12345678';"
+          sudo mysql -e "GRANT ALL PRIVILEGES ON agrotech_test.* TO 'ci_user'@'localhost';"
           sudo mysql -e "FLUSH PRIVILEGES;"
 
-          sudo systemctl restart mysql
-          sleep 5
-
-          for i in {1..5}; do
-            if mysql -uroot -p12345678 -e "SELECT 1"; then
-              echo "MySQL conectado correctamente"
-              break
-            fi
-            sleep 2
-          done
-
-          mysql -uroot -p12345678 -e "CREATE DATABASE IF NOT EXISTS agrotech_test;"
-          mysql -uroot -p12345678 -e "SHOW DATABASES;"
-
-      - name: Verificar conexión MySQL
-        run: |
-          mysql -uroot -p12345678 -e "SELECT 1;"
+          # Verificar conexión
+          mysql -uci_user -p12345678 -e "SHOW DATABASES;"
 
       - name: Cache de dependencias Maven
         uses: actions/cache@v3
