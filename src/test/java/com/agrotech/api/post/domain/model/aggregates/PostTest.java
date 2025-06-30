@@ -4,11 +4,13 @@ import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.post.domain.model.commands.CreatePostCommand;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ActiveProfiles("test")
 class PostTest {
 
     @Test

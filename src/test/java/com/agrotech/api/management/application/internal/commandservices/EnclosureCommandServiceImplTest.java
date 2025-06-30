@@ -14,7 +14,9 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 import com.agrotech.api.management.infrastructure.persistence.jpa.entities.EnclosureEntity;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 class EnclosureCommandServiceImplTest {
 
     @Mock

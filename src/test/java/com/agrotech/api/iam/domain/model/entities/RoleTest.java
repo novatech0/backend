@@ -3,9 +3,11 @@ package com.agrotech.api.iam.domain.model.entities;
 import com.agrotech.api.iam.domain.exceptions.InvalidRoleException;
 import com.agrotech.api.iam.domain.model.valueobjects.Roles;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 class RoleTest {
 
     @Test

@@ -8,6 +8,9 @@ import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.management.domain.model.commands.CreateEnclosureCommand;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles("test")
 class EnclosureTest {
     // Creating a new Enclosure with valid CreateEnclosureCommand and Farmer
     @Test

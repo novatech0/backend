@@ -9,9 +9,11 @@ import com.agrotech.api.appointment.domain.model.valueobjects.AvailableDateStatu
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.profile.domain.model.entities.Advisor;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 
+@ActiveProfiles("test")
 class AvailableDateTest {
     // Creating a new AvailableDate with valid CreateAvailableDateCommand and Advisor
     @Test

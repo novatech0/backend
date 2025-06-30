@@ -9,6 +9,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: ci
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: agrotech_test
+          MYSQL_USER: root
+          MYSQL_PASSWORD: 12345678
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     env:
       MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
       MYSQL_PORT: ${{ secrets.MYSQL_PORT }}

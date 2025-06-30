@@ -1,10 +1,8 @@
 package com.agrotech.api.appointment.interfaces.exceptions;
 
 import com.agrotech.api.AgrotechApplication;
-import com.agrotech.api.appointment.domain.exceptions.*;
 import com.agrotech.api.appointment.domain.model.commands.CreateAvailableDateCommand;
 import com.agrotech.api.appointment.domain.services.AvailableDateCommandService;
-import com.agrotech.api.appointment.interfaces.rest.resources.CreateAppointmentResource;
 import com.agrotech.api.appointment.interfaces.rest.resources.CreateReviewResource;
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.iam.domain.model.commands.SignInCommand;
@@ -26,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ActiveProfiles("test")
 @SpringBootTest(classes = AgrotechApplication.class)
 @AutoConfigureMockMvc
 @Transactional

@@ -9,9 +9,11 @@ import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.RoleEntity;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+@ActiveProfiles("test")
 class RoleQueryServiceImplTest {
 
     // Test: handle(GetAllRolesQuery) returns all roles from repository
