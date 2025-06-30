@@ -1,5 +1,7 @@
 package com.agrotech.api.appointment.interfaces.rest;
 
+import com.agrotech.api.appointment.domain.exceptions.AvailableDateNotFoundException;
+import com.agrotech.api.appointment.domain.exceptions.ReviewNotFoundException;
 import com.agrotech.api.appointment.domain.model.commands.DeleteReviewCommand;
 import com.agrotech.api.appointment.domain.model.entities.Review;
 import com.agrotech.api.appointment.domain.model.queries.*;
@@ -73,7 +75,7 @@ public class ReviewsController {
     public ResponseEntity<ReviewResource> getReviewById(@PathVariable Long id) {
         var getReviewByIdQuery = new GetReviewByIdQuery(id);
         var review = reviewQueryService.handle(getReviewByIdQuery);
-        if (review.isEmpty()) return ResponseEntity.notFound().build();
+        if (review.isEmpty()) throw new ReviewNotFoundException(id);
         var reviewResource = ReviewResourceFromEntityAssembler.toResourceFromEntity(review.get());
         return ResponseEntity.ok(reviewResource);
     }

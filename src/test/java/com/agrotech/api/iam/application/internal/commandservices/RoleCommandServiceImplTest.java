@@ -1,13 +1,14 @@
 package com.agrotech.api.iam.application.internal.commandservices;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.agrotech.api.iam.domain.model.commands.SeedRolesCommand;
 import com.agrotech.api.iam.domain.model.valueobjects.Roles;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 class RoleCommandServiceImplTest {
     // Verify all roles from Roles enum are created when none exist in the database
     @Test

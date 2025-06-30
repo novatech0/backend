@@ -3,6 +3,7 @@ package com.agrotech.api.profile.domain.model.aggregates;
 import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.profile.domain.model.commands.CreateProfileCommand;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 
@@ -10,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ActiveProfiles("test")
 class ProfileTest {
-
     @Test
     public void test_create_farmer_profile_with_valid_command() {
         // Arrange
