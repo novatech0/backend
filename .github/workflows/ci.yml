@@ -9,23 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: ci
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: 12345678
-          MYSQL_DATABASE: agrotech_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     env:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      MYSQL_HOST: mysql
 
     steps:
       - name: Checkout código
@@ -37,6 +22,16 @@ jobs:
           distribution: 'temurin'
           java-version: '22'
 
+      - name: Configurar MySQL con base de datos
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-server
+          sudo systemctl start mysql
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '12345678';"
+          sudo mysql -e "FLUSH PRIVILEGES;"
+          mysql -uroot -p12345678 -e "CREATE DATABASE IF NOT EXISTS agrotech_test;"
+          mysql -uroot -p12345678 -e "SHOW DATABASES;"
+
       - name: Cache de dependencias Maven
         uses: actions/cache@v3
         with:
@@ -47,13 +42,6 @@ jobs:
 
       - name: Descargar dependencias
         run: mvn dependency:go-offline
-
-      - name: Esperar a que MySQL esté listo
-        run: |
-          while ! mysqladmin ping -h"mysql" -P"3306" -uroot -p"12345678" --protocol=tcp --silent; do
-            sleep 1
-            echo "Esperando a MySQL..."
-          done
 
       - name: Build y Tests
         run: mvn -B clean verify
