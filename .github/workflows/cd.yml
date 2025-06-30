@@ -10,6 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: cd
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 12345678
+          MYSQL_DATABASE: agrotech_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     env:
       DOCKER_IMAGE: pierod04/agrotech-backend
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -34,6 +48,12 @@ jobs:
 
       - name: Descargar dependencias
         run: mvn dependency:go-offline
+
+      - name: Esperar a que MySQL esté listo
+        run: |
+          while ! mysqladmin ping -h"mysql" -P"3306" -uroot -p"12345678" --silent; do
+            sleep 1
+          done
 
       - name: Compilar proyecto con tests
         run: mvn -B clean package -DskipTests=false

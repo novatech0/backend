@@ -1,4 +1,4 @@
-name: Continous Integration (CI)
+name: Continuous Integration (CI)
 
 on:
   pull_request:
@@ -9,8 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     environment: ci
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 12345678
+          MYSQL_DATABASE: agrotech_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     env:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MYSQL_HOST: mysql
 
     steps:
       - name: Checkout código
@@ -32,6 +47,13 @@ jobs:
 
       - name: Descargar dependencias
         run: mvn dependency:go-offline
+
+      - name: Esperar a que MySQL esté listo
+        run: |
+          while ! mysqladmin ping -h"mysql" -P"3306" -uroot -p"12345678" --protocol=tcp --silent; do
+            sleep 1
+            echo "Esperando a MySQL..."
+          done
 
       - name: Build y Tests
         run: mvn -B clean verify
