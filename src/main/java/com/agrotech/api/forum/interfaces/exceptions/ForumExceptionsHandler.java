@@ -21,4 +21,9 @@ public class ForumExceptionsHandler {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO("Post Reply Not Found", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(ForumFavoriteNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleFavoriteNotFoundException(ForumFavoriteNotFoundException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Forum Favorite Not Found", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
 }
