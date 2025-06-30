@@ -27,10 +27,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-server
           sudo systemctl start mysql
+
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;"
           sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '12345678';"
           sudo mysql -e "FLUSH PRIVILEGES;"
+
+          sudo systemctl restart mysql
+          sleep 5
+
+          for i in {1..5}; do
+            if mysql -uroot -p12345678 -e "SELECT 1"; then
+              echo "MySQL conectado correctamente"
+              break
+            fi
+            sleep 2
+          done
+
           mysql -uroot -p12345678 -e "CREATE DATABASE IF NOT EXISTS agrotech_test;"
           mysql -uroot -p12345678 -e "SHOW DATABASES;"
+
+      - name: Verificar conexión MySQL
+        run: |
+          mysql -uroot -p12345678 -e "SELECT 1;"
 
       - name: Cache de dependencias Maven
         uses: actions/cache@v3
