@@ -16,4 +16,9 @@ public class ForumExceptionsHandler {
         ErrorResponseDTO errorResponse = new ErrorResponseDTO("Forum Post Not Found", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(ForumReplyNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleReplyNotFoundException(ForumReplyNotFoundException e) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO("Post Reply Not Found", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
 }
