@@ -5,6 +5,7 @@ import com.agrotech.api.forum.domain.model.commands.DeleteForumFavoriteCommand;
 import com.agrotech.api.forum.domain.model.entities.ForumFavorite;
 import com.agrotech.api.forum.domain.model.queries.CheckForumFavoriteExistsQuery;
 import com.agrotech.api.forum.domain.model.queries.GetAllForumFavoritesByForumPostIdQuery;
+import com.agrotech.api.forum.domain.model.queries.GetAllForumFavoritesByUserIdQuery;
 import com.agrotech.api.forum.domain.services.ForumFavoriteCommandService;
 import com.agrotech.api.forum.domain.services.ForumFavoriteQueryService;
 import com.agrotech.api.forum.interfaces.rest.resources.CreateForumFavoriteResource;
@@ -50,9 +51,21 @@ public class ForumFavoritesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ForumFavoriteResource>> getAllByForumPost(@RequestParam("forumPostId") Long forumPostId) {
-        var query = new GetAllForumFavoritesByForumPostIdQuery(forumPostId);
-        List<ForumFavorite> favorites = queryService.handle(query);
+    public ResponseEntity<List<ForumFavoriteResource>> getAllByForumPost(@RequestParam(required = false) Long userId, @RequestParam(required = false) Long forumPostId) {
+        List<ForumFavorite> favorites;
+        if (userId != null) {
+            // Get all favorites by user
+            var query = new GetAllForumFavoritesByUserIdQuery(userId);
+            favorites = queryService.handle(query);
+        }
+        else if (forumPostId != null) {
+            // Get all favorites by forum post
+            var query = new GetAllForumFavoritesByForumPostIdQuery(forumPostId);
+            favorites = queryService.handle(query);
+        }
+        else {
+            return ResponseEntity.badRequest().build();
+        }
 
         var resources = favorites.stream()
                 .map(ForumFavoriteResourceFromEntityAssembler::toResourceFromEntity)

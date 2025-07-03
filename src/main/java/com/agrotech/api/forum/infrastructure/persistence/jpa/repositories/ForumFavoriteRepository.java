@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ForumFavoriteRepository extends JpaRepository<ForumFavoriteEntity, Long> {
     Optional<ForumFavoriteEntity> findByUser_IdAndForumPost_Id(Long userId, Long forumPostId);
     List<ForumFavoriteEntity> findAllByForumPost_Id(Long forumPostId);
+    List<ForumFavoriteEntity> findAllByUser_Id(Long userId);
 }
