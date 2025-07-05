@@ -24,10 +24,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
+@ActiveProfiles("test")
 class AppointmentCommandServiceImplTest {
 
     @Mock

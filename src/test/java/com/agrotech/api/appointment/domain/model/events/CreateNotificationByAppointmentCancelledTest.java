@@ -2,7 +2,9 @@ package com.agrotech.api.appointment.domain.model.events;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 class CreateNotificationByAppointmentCancelledTest {
     // Create event with valid source and availableDateId
     @Test

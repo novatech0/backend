@@ -9,6 +9,9 @@ import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.model.valueobjects.AppointmentStatus;
 import com.agrotech.api.profile.domain.model.entities.Farmer;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles("test")
 class AppointmentTest {
     // Creating a new Appointment with valid CreateAppointmentCommand sets correct initial values
     @Test

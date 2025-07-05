@@ -7,9 +7,11 @@ import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.UserMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Set;
 
+@ActiveProfiles("test")
 class UserTest {
     // Creating a User with username and password initializes empty roles collection
     @Test

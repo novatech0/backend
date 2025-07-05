@@ -1,6 +1,5 @@
 package com.agrotech.api.appointment.application.internal.eventhandlers;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,11 +19,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 
+@ActiveProfiles("test")
 class AppointmentDeletedEventHandlerTest {
 
     @Mock

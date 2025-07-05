@@ -1,5 +1,7 @@
 package com.agrotech.api.appointment.interfaces.rest;
 
+import com.agrotech.api.appointment.domain.exceptions.AppointmentNotFoundException;
+import com.agrotech.api.appointment.domain.exceptions.AvailableDateNotFoundException;
 import com.agrotech.api.appointment.domain.model.commands.DeleteAvailableDateCommand;
 import com.agrotech.api.appointment.domain.model.entities.AvailableDate;
 import com.agrotech.api.appointment.domain.model.queries.*;
@@ -69,9 +71,7 @@ public class AvailableDatesController {
     public ResponseEntity<AvailableDateResource> getAvailableDateById(@PathVariable Long id) {
         var getAvailableDateByIdQuery = new GetAvailableDateByIdQuery(id);
         var availableDate = availableDateQueryService.handle(getAvailableDateByIdQuery);
-        if (availableDate.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (availableDate.isEmpty()) throw new AvailableDateNotFoundException(id);
         var availableDateResource = AvailableDateResourceFromEntityAssembler.toResourceFromEntity(availableDate.get());
         return ResponseEntity.ok(availableDateResource);
     }

@@ -1,5 +1,7 @@
 package com.agrotech.api.profile.interfaces.rest;
 
+import com.agrotech.api.appointment.domain.exceptions.AppointmentNotFoundException;
+import com.agrotech.api.appointment.domain.exceptions.ProfileNotFoundException;
 import com.agrotech.api.profile.domain.model.aggregates.Profile;
 import com.agrotech.api.profile.domain.model.commands.DeleteProfileCommand;
 import com.agrotech.api.profile.domain.model.queries.GetAllAdvisorProfilesQuery;
@@ -60,7 +62,7 @@ public class ProfilesController {
     public ResponseEntity<ProfileResource> getProfileByUserId(@PathVariable Long userId) {
         var getProfileByUserIdQuery = new GetProfileByUserIdQuery(userId);
         var profile = profileQueryService.handle(getProfileByUserIdQuery);
-        if (profile.isEmpty()) return ResponseEntity.notFound().build();
+        if (profile.isEmpty()) throw new ProfileNotFoundException();
         var profileResource = ProfileResourceFromEntityAssembler.toResourceFromEntity(profile.get());
         return ResponseEntity.ok(profileResource);
     }

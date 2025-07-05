@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 class ApplicationReadyEventHandlerTest {
     // Event handler correctly calls roleCommandService.handle with a new SeedRolesCommand
     @Test
