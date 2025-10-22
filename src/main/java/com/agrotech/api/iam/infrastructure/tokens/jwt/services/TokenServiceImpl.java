@@ -10,12 +10,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -46,7 +48,22 @@ public class TokenServiceImpl implements BearerTokenService {
      */
     @Override
     public String generateToken(Authentication authentication) {
-        return buildTokenWithDefaultParameters(authentication.getName());
+        var issuedAt = new Date();
+        var expiration = DateUtils.addDays(issuedAt, expirationDays);
+        var key = getSigningKey();
+
+        var roles = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        return Jwts.builder()
+                .subject(authentication.getName())
+                .claim("roles", roles)
+                .issuedAt(issuedAt)
+                .expiration(expiration)
+                .signWith(key)
+                .compact();
     }
 
     /**
@@ -55,7 +72,11 @@ public class TokenServiceImpl implements BearerTokenService {
      * @return String the JWT token
      */
     public String generateToken(String username) {
-        return buildTokenWithDefaultParameters(username);
+        return buildTokenWithDefaultParameters(username, null);
+    }
+
+    public String generateToken(String username, List<String> roles) {
+        return buildTokenWithDefaultParameters(username, roles);
     }
 
     /**
@@ -64,14 +85,22 @@ public class TokenServiceImpl implements BearerTokenService {
      * @param username the username
      * @return String the JWT token
      */
-    private String buildTokenWithDefaultParameters(String username) {
+    private String buildTokenWithDefaultParameters(String username, List<String> roles) {
         var issuedAt = new Date();
         var expiration = DateUtils.addDays(issuedAt, expirationDays);
         var key = getSigningKey();
-        return Jwts.builder()
+
+        var builder = Jwts.builder()
                 .subject(username)
                 .issuedAt(issuedAt)
-                .expiration(expiration)
+                .expiration(expiration);
+
+        // Solo agrega roles si existen
+        if (roles != null && !roles.isEmpty()) {
+            builder.claim("roles", roles);
+        }
+
+        return builder
                 .signWith(key)
                 .compact();
     }

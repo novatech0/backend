@@ -11,6 +11,7 @@ import com.agrotech.api.iam.domain.model.aggregates.User;
 import com.agrotech.api.iam.domain.model.commands.SignInCommand;
 import com.agrotech.api.iam.domain.model.commands.SignUpCommand;
 import com.agrotech.api.iam.domain.services.UserCommandService;
+import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.RoleEntity;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.entities.UserEntity;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.RoleMapper;
 import com.agrotech.api.iam.infrastructure.persistence.jpa.mappers.UserMapper;
@@ -44,8 +45,15 @@ public class UserCommandServiceImpl implements UserCommandService {
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {
         var user = userRepository.findByUsername(command.username())
                 .orElseThrow(() -> new UserNotFoundInSignInException(command.username()));
-        if (!hashingService.matches(command.password(), user.getPassword())) throw new InvalidPasswordException();
-        var token = tokenService.generateToken(user.getUsername());
+        if (!hashingService.matches(command.password(), user.getPassword()))
+            throw new InvalidPasswordException();
+
+        var roles = user.getRoles()
+                .stream()
+                .map(role -> role.getName().name())
+                .toList();
+
+        var token = tokenService.generateToken(user.getUsername(), roles);
         return Optional.of(ImmutablePair.of(UserMapper.toDomain(user), token));
     }
 
