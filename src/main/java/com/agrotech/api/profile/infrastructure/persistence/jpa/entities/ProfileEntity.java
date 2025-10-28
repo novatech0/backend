@@ -39,14 +39,14 @@ public class ProfileEntity extends AuditableEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    public void update(UpdateProfileCommand command) {
+    public void update(UpdateProfileCommand command, String photoUrl) {
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.city = command.city();
         this.country = command.country();
         this.birthDate = command.birthDate();
         this.description = command.description();
-        this.photo = command.photo();
+        this.photo = photoUrl;
         this.occupation = command.occupation();
         this.experience = command.experience();
     }

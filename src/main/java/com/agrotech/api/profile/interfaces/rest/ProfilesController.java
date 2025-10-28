@@ -16,6 +16,10 @@ import com.agrotech.api.profile.interfaces.rest.resources.UpdateProfileResource;
 import com.agrotech.api.profile.interfaces.rest.transform.CreateProfileCommandFromResourceAssembler;
 import com.agrotech.api.profile.interfaces.rest.transform.ProfileResourceFromEntityAssembler;
 import com.agrotech.api.profile.interfaces.rest.transform.UpdateProfileCommandFromResourceAssembler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,8 +80,9 @@ public class ProfilesController {
         return ResponseEntity.ok(profileResources);
     }
 
-    @PostMapping
-    public ResponseEntity<ProfileResource> createProfile(@RequestBody CreateProfileResource createProfileResource) {
+    @Operation(summary = "Create profile", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = CreateProfileResource.class))))
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<ProfileResource> createProfile(@ModelAttribute CreateProfileResource createProfileResource) throws IOException {
         var createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(createProfileResource);
         Long profileId = profileCommandService.handle(createProfileCommand);
         var profile = profileQueryService.handle(new GetProfileByIdQuery(profileId));
@@ -85,8 +91,9 @@ public class ProfilesController {
         return new ResponseEntity<>(profileResource, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ProfileResource> updateProfile(@PathVariable Long id,@RequestBody UpdateProfileResource updateProfileResource) {
+    @Operation(summary = "Update profile", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = UpdateProfileResource.class))))
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<ProfileResource> updateProfile(@PathVariable Long id, @ModelAttribute UpdateProfileResource updateProfileResource) throws IOException {
         var updateProfileCommand = UpdateProfileCommandFromResourceAssembler.toCommandFromResource(id, updateProfileResource);
         Optional<Profile> profile = profileCommandService.handle(updateProfileCommand);
         if (profile.isEmpty()) return ResponseEntity.notFound().build();

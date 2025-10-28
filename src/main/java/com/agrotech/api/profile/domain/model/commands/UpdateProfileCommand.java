@@ -1,5 +1,7 @@
 package com.agrotech.api.profile.domain.model.commands;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDate;
 
 public record UpdateProfileCommand(Long id,
@@ -9,6 +11,6 @@ public record UpdateProfileCommand(Long id,
                                    String country,
                                    LocalDate birthDate,
                                    String description,
-                                   String photo,
+                                   MultipartFile photo,
                                    String occupation,
                                    Integer experience){}
