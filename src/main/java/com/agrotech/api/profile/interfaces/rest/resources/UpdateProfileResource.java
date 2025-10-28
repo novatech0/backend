@@ -1,5 +1,6 @@
 package com.agrotech.api.profile.interfaces.rest.resources;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +18,7 @@ public record UpdateProfileResource(
         @NotNull
         LocalDate birthDate,
         String description,
-        @NotNull
+        @Schema(type = "string", format = "binary")
         MultipartFile photo,
         String occupation,
         Integer experience

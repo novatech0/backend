@@ -13,6 +13,10 @@ import com.agrotech.api.post.interfaces.rest.resources.UpdatePostResource;
 import com.agrotech.api.post.interfaces.rest.transform.CreatePostCommandFromResourceAssembler;
 import com.agrotech.api.post.interfaces.rest.transform.PostResourceFromEntityAssembler;
 import com.agrotech.api.post.interfaces.rest.transform.UpdatePostCommandFromResourceAssembler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,8 +74,10 @@ public class PostsController {
         return ResponseEntity.ok(postResource);
     }
 
-    @PostMapping
-    public ResponseEntity<PostResource> createPost(@RequestBody CreatePostResource createPostResource) {
+    @Operation(summary = "Create post", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = CreatePostResource.class))))
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<PostResource> createPost(
+            @ModelAttribute CreatePostResource createPostResource) throws IOException {
         var createPostCommand = CreatePostCommandFromResourceAssembler.toCommandFromResource(createPostResource);
         var postId = postCommandService.handle(createPostCommand);
         var getPostByIdQuery = new GetPostByIdQuery(postId);
@@ -80,8 +87,11 @@ public class PostsController {
         return new ResponseEntity<>(postResource, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PostResource> updatePost(@PathVariable Long id, @RequestBody UpdatePostResource updatePostResource) {
+    @Operation(summary = "Update post", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = UpdatePostResource.class))))
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<PostResource> updatePost(
+            @PathVariable Long id,
+            @ModelAttribute UpdatePostResource updatePostResource) throws IOException {
         var updatePostCommand = UpdatePostCommandFromResourceAssembler.toCommandFromResource(id, updatePostResource);
         Optional<Post> post = postCommandService.handle(updatePostCommand);
         if (post.isEmpty()) return ResponseEntity.notFound().build();

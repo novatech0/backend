@@ -82,7 +82,8 @@ public class ProfilesController {
 
     @Operation(summary = "Create profile", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = CreateProfileResource.class))))
     @PostMapping(consumes = "multipart/form-data")
-    public ResponseEntity<ProfileResource> createProfile(@ModelAttribute CreateProfileResource createProfileResource) throws IOException {
+    public ResponseEntity<ProfileResource> createProfile(
+            @ModelAttribute CreateProfileResource createProfileResource) throws IOException {
         var createProfileCommand = CreateProfileCommandFromResourceAssembler.toCommandFromResource(createProfileResource);
         Long profileId = profileCommandService.handle(createProfileCommand);
         var profile = profileQueryService.handle(new GetProfileByIdQuery(profileId));
@@ -93,7 +94,9 @@ public class ProfilesController {
 
     @Operation(summary = "Update profile", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(implementation = UpdateProfileResource.class))))
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
-    public ResponseEntity<ProfileResource> updateProfile(@PathVariable Long id, @ModelAttribute UpdateProfileResource updateProfileResource) throws IOException {
+    public ResponseEntity<ProfileResource> updateProfile(
+            @PathVariable Long id,
+            @ModelAttribute UpdateProfileResource updateProfileResource) throws IOException {
         var updateProfileCommand = UpdateProfileCommandFromResourceAssembler.toCommandFromResource(id, updateProfileResource);
         Optional<Profile> profile = profileCommandService.handle(updateProfileCommand);
         if (profile.isEmpty()) return ResponseEntity.notFound().build();

@@ -1,4 +1,15 @@
 package com.agrotech.api.post.interfaces.rest.resources;
 
-public record CreatePostResource(Long advisorId, String title, String description, String image) {
+import jakarta.validation.constraints.NotNull;
+import org.springframework.web.multipart.MultipartFile;
+
+public record CreatePostResource(
+        @NotNull
+        Long advisorId,
+        @NotNull
+        String title,
+        @NotNull
+        String description,
+        @NotNull
+        MultipartFile image) {
 }

@@ -8,6 +8,7 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "profile")
@@ -46,7 +47,7 @@ public class ProfileEntity extends AuditableEntity {
         this.country = command.country();
         this.birthDate = command.birthDate();
         this.description = command.description();
-        this.photo = photoUrl;
+        if (!Objects.equals(photoUrl, "null")) this.photo = photoUrl;
         this.occupation = command.occupation();
         this.experience = command.experience();
     }

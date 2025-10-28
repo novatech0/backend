@@ -14,10 +14,10 @@ public class Post {
 
     public Post() {}
 
-    public Post(CreatePostCommand command, Advisor advisor) {
+    public Post(CreatePostCommand command, Advisor advisor, String imageUrl) {
         this.title = command.title();
         this.description = command.description();
-        this.image = command.image();
+        this.image = imageUrl;
         this.advisor = advisor;
     }
 

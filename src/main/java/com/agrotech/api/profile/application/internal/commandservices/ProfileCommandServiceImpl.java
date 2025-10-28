@@ -48,7 +48,12 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
     public Optional<Profile> handle(UpdateProfileCommand command) throws IOException {
         var profileEntity = profileRepository.findById(command.id())
                 .orElseThrow(() -> new ProfileNotFoundException(command.id()));
-        var photoUrl = googleStorageService.uploadFile(command.photo());
+        var photoUrl = "null";
+        try {
+            if (command.photo() != null) photoUrl = googleStorageService.uploadFile(command.photo());
+        } catch (IOException e) {
+            // Ignore if no new photo is provided
+        }
         profileEntity.update(command, photoUrl);
         var updatedEntity = profileRepository.save(profileEntity);
         return Optional.of(ProfileMapper.toDomain(updatedEntity));
