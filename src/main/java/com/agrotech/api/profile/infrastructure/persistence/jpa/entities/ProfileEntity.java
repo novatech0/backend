@@ -8,6 +8,7 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "profile")
@@ -39,14 +40,14 @@ public class ProfileEntity extends AuditableEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    public void update(UpdateProfileCommand command) {
+    public void update(UpdateProfileCommand command, String photoUrl) {
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.city = command.city();
         this.country = command.country();
         this.birthDate = command.birthDate();
         this.description = command.description();
-        this.photo = command.photo();
+        if (!Objects.equals(photoUrl, "null")) this.photo = photoUrl;
         this.occupation = command.occupation();
         this.experience = command.experience();
     }

@@ -7,6 +7,8 @@ import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEnti
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "post")
 @Getter
@@ -30,9 +32,9 @@ public class PostEntity extends AuditableEntity {
     @JoinColumn(name = "advisor_id")
     private AdvisorEntity advisor;
 
-    public void update(UpdatePostCommand command) {
+    public void update(UpdatePostCommand command, String imageUrl) {
         this.title = command.title();
         this.description = command.description();
-        this.image = command.image();
+        if (!Objects.equals(imageUrl, "null")) this.image = imageUrl;
     }
 }

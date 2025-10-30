@@ -24,14 +24,14 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(CreateProfileCommand command, User user) {
+    public Profile(CreateProfileCommand command, User user, String photoUrl) {
         this.firstName = command.firstName();
         this.lastName = command.lastName();
         this.city = command.city();
         this.country = command.country();
         this.birthDate = command.birthDate();
         this.description = command.description();
-        this.photo = command.photo();
+        this.photo = photoUrl;
         this.occupation = command.occupation();
         this.experience = command.experience();
         this.user = user;
