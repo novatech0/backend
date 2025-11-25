@@ -5,6 +5,7 @@ import com.agrotech.api.management.domain.model.aggregates.Crop;
 import com.agrotech.api.management.domain.model.commands.CreateCropCommand;
 import com.agrotech.api.management.domain.model.commands.DeleteCropCommand;
 import com.agrotech.api.management.domain.model.commands.UpdateCropCommand;
+import com.agrotech.api.management.domain.model.commands.UpdateIotCropCommand;
 import com.agrotech.api.management.domain.services.CropCommandService;
 import com.agrotech.api.management.infrastructure.persistence.jpa.mappers.CropMapper;
 import com.agrotech.api.management.infrastructure.persistence.jpa.repositories.CropRepository;
@@ -48,5 +49,14 @@ public class CropCommandServiceImpl implements CropCommandService {
         var crop = cropRepository.findById(command.cropId())
                 .orElseThrow(() -> new CropNotFoundException(command.cropId()));
         cropRepository.delete(crop);
+    }
+
+    @Override
+    public Optional<Crop> handle(UpdateIotCropCommand command) {
+        var crop = cropRepository.findById(command.cropId())
+                .orElseThrow(() -> new CropNotFoundException(command.cropId()));
+        crop.updateIotData(command);
+        cropRepository.save(crop);
+        return Optional.of(CropMapper.toDomain(crop));
     }
 }

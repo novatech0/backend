@@ -116,6 +116,7 @@ public class WebSecurityConfiguration {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
+                                "/api/v1/crops/{id}/iot",
                                 "/webjars/**",
                                 "/error").permitAll()
                         .anyRequest().authenticated())

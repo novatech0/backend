@@ -1,6 +1,7 @@
 package com.agrotech.api.management.infrastructure.persistence.jpa.entities;
 
 import com.agrotech.api.management.domain.model.commands.UpdateCropCommand;
+import com.agrotech.api.management.domain.model.commands.UpdateIotCropCommand;
 import com.agrotech.api.profile.infrastructure.persistence.jpa.entities.FarmerEntity;
 import com.agrotech.api.shared.infrastructure.persistence.jpa.base.AuditableEntity;
 import jakarta.persistence.*;
@@ -52,5 +53,11 @@ public class CropEntity extends AuditableEntity {
         this.tankHeight = command.tankHeight();
         this.temperatureMaxThreshold = command.temperatureMaxThreshold();
         this.humidityMinThreshold = command.humidityMinThreshold();
+    }
+
+    public void updateIotData(UpdateIotCropCommand command) {
+        this.temperature = command.temperature();
+        this.humidity = command.humidity();
+        this.tankCurrentVolume = command.tankCurrentVolume();
     }
 }

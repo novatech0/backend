@@ -10,6 +10,7 @@ import com.agrotech.api.management.domain.services.CropQueryService;
 import com.agrotech.api.management.interfaces.rest.resources.CreateCropResource;
 import com.agrotech.api.management.interfaces.rest.resources.CropResource;
 import com.agrotech.api.management.interfaces.rest.resources.UpdateCropResource;
+import com.agrotech.api.management.interfaces.rest.resources.UpdateIotCropResource;
 import com.agrotech.api.management.interfaces.rest.transform.CreateCropCommandFromResourceAssembler;
 import com.agrotech.api.management.interfaces.rest.transform.CropResourceFromEntityAssembler;
 import com.agrotech.api.management.interfaces.rest.transform.UpdateCropCommandFromResourceAssembler;
@@ -24,8 +25,6 @@ import java.util.Optional;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-
-@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 @RestController
 @RequestMapping(value = "/api/v1/crops", produces = APPLICATION_JSON_VALUE)
 @Tag(name = "Crops", description = "Crop Management Endpoints")
@@ -38,6 +37,7 @@ public class CropController {
         this.cropQueryService = cropQueryService;
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<CropResource>> getCrops(
             @RequestParam(value = "farmerId", required = false) Long farmerId
@@ -54,6 +54,7 @@ public class CropController {
         return ResponseEntity.ok(cropResources);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<CropResource> getCropById(@RequestParam Long id) {
         var getCropByIdQuery = new GetCropByIdQuery(id);
@@ -63,6 +64,7 @@ public class CropController {
         return ResponseEntity.ok(cropResource);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CropResource> createCrop(@RequestBody CreateCropResource resource) {
         var createCropCommand = CreateCropCommandFromResourceAssembler.toCommandFromResource(resource);
@@ -73,6 +75,8 @@ public class CropController {
         return new ResponseEntity<>(cropResource, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+
     @PutMapping
     public ResponseEntity<CropResource> updateCrop(@PathVariable Long id, @RequestBody UpdateCropResource resource) {
         var updateCropCommand = UpdateCropCommandFromResourceAssembler.toCommandFromResource(id, resource);
@@ -82,10 +86,20 @@ public class CropController {
         return ResponseEntity.ok(cropResource);
     }
 
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCrop(@PathVariable Long id) {
         var deleteCropCommand = new DeleteCropCommand(id);
         cropCommandService.handle(deleteCropCommand);
         return ResponseEntity.ok().body("Crop with id " + id + " deleted successfully.");
+    }
+
+    @PutMapping("/{id}/iot")
+    public ResponseEntity<?> updateIot(@PathVariable Long id, @RequestBody UpdateIotCropResource resource) {
+        var updateIotCropCommand = UpdateCropCommandFromResourceAssembler.toIotCommandFromResource(id, resource);
+        Optional<Crop> crop = cropCommandService.handle(updateIotCropCommand);
+        if (crop.isEmpty()) return ResponseEntity.notFound().build();
+        var cropResource = CropResourceFromEntityAssembler.toResourceFromEntity(crop.get());
+        return ResponseEntity.ok().body(cropResource);
     }
 }
