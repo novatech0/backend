@@ -7,12 +7,10 @@ import com.agrotech.api.management.domain.model.queries.GetAllCropsQuery;
 import com.agrotech.api.management.domain.model.queries.GetCropByIdQuery;
 import com.agrotech.api.management.domain.services.CropCommandService;
 import com.agrotech.api.management.domain.services.CropQueryService;
-import com.agrotech.api.management.interfaces.rest.resources.CreateCropResource;
-import com.agrotech.api.management.interfaces.rest.resources.CropResource;
-import com.agrotech.api.management.interfaces.rest.resources.UpdateCropResource;
-import com.agrotech.api.management.interfaces.rest.resources.UpdateIotCropResource;
+import com.agrotech.api.management.interfaces.rest.resources.*;
 import com.agrotech.api.management.interfaces.rest.transform.CreateCropCommandFromResourceAssembler;
 import com.agrotech.api.management.interfaces.rest.transform.CropResourceFromEntityAssembler;
+import com.agrotech.api.management.interfaces.rest.transform.CropThresholdsResourceFromEntityAssembler;
 import com.agrotech.api.management.interfaces.rest.transform.UpdateCropCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -56,7 +54,7 @@ public class CropController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<CropResource> getCropById(@RequestParam Long id) {
+    public ResponseEntity<CropResource> getCropById(@PathVariable Long id) {
         var getCropByIdQuery = new GetCropByIdQuery(id);
         var crop = cropQueryService.handle(getCropByIdQuery);
         if (crop.isEmpty()) return ResponseEntity.notFound().build();
@@ -76,8 +74,7 @@ public class CropController {
     }
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<CropResource> updateCrop(@PathVariable Long id, @RequestBody UpdateCropResource resource) {
         var updateCropCommand = UpdateCropCommandFromResourceAssembler.toCommandFromResource(id, resource);
         Optional<Crop> crop = cropCommandService.handle(updateCropCommand);
@@ -101,5 +98,14 @@ public class CropController {
         if (crop.isEmpty()) return ResponseEntity.notFound().build();
         var cropResource = CropResourceFromEntityAssembler.toResourceFromEntity(crop.get());
         return ResponseEntity.ok().body(cropResource);
+    }
+
+    @GetMapping("/{id}/thresholds")
+    public ResponseEntity<CropThresholdsResource> getCropThresholds(@PathVariable Long id) {
+        var getCropByIdQuery = new GetCropByIdQuery(id);
+        var crop = cropQueryService.handle(getCropByIdQuery);
+        if (crop.isEmpty()) return ResponseEntity.notFound().build();
+        var cropResource = CropThresholdsResourceFromEntityAssembler.toResourceFromEntity(crop.get());
+        return ResponseEntity.ok(cropResource);
     }
 }
